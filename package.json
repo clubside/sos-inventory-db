@@ -1,0 +1,49 @@
+{
+  "name": "sos-inventory-download",
+  "version": "1.0.0",
+  "description": "A schema-driven downloader that mirrors all SOS Inventory API objects into relational databases such as SQLite, PostgreSQL, MariaDB, and SQL Server.",
+  "type": "commonjs",
+  "main": "./dist/index.cjs",
+  "module": "./dist/index.mjs",
+  "exports": {
+    ".": {
+      "import": "./dist/index.mjs",
+      "require": "./dist/index.cjs"
+    }
+  },
+  "scripts": {
+    "build": "node build.js",
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": [
+    "sos-inventory",
+    "sos inventory",
+    "inventory",
+    "api",
+    "etl",
+    "data-ingestion",
+    "database",
+    "sqlite",
+    "postgresql",
+    "mysql",
+    "mariadb",
+    "sqlserver",
+    "schema",
+    "sync",
+    "mirror",
+    "downloader"
+  ],
+  "author": "Chris Rowley",
+  "license": "MIT",
+  "optionalDependencies": {
+    "better-sqlite3": "^12.8.0",
+    "mariadb": "^3.5.2",
+    "mssql": "^12.2.1",
+    "mysql2": "^3.20.0",
+    "pg": "^8.20.0"
+  },
+  "devDependencies": {
+    "eslint": "^10.1.0",
+    "globals": "^17.4.0"
+  }
+}
