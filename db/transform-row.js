@@ -59,23 +59,32 @@ module.exports = function transformRow(engine, tableDef, sosObject) {
 	}
 
 	// PASS 2 — synthetic FK fields appended at the end
+	// PASS 2 — synthetic FK fields appended at the end
 	for (const field of tableDef.fields) {
-		if (field.type === 'reference' && field.reference) {
-			let refObj = sosObject[field.name]
+		if (field.type !== 'reference') continue
 
-			// unwrap single-element arrays (SOS quirk)
-			if (Array.isArray(refObj)) {
-				if (refObj.length === 1 && typeof refObj[0] === 'object' && refObj[0] !== null) {
-					refObj = refObj[0]
-				} else {
-					refObj = null
-				}
+		// Raw value from SOS payload
+		let refObj = sosObject[field.name]
+
+		// --- Preserve the unwrap fix ---
+		if (Array.isArray(refObj)) {
+			if (refObj.length === 1 && typeof refObj[0] === 'object' && refObj[0] !== null) {
+				refObj = refObj[0]
+			} else {
+				refObj = null
 			}
+		}
 
+		// --- True SOS reference: extract FK ---
+		if (field.reference) {
 			const fkName = field.reference.field
 			const fkValue = refObj?.[field.reference.property] ?? null
 			row[fkName] = fkValue
 		}
+
+		// --- ALWAYS store the reference object itself (true + ghost refs) ---
+		// Pass 1 already created the column; here we only populate it.
+		row[field.name] = refObj == null ? null : transformJson(engine, refObj)
 	}
 
 	return row

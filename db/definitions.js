@@ -10,11 +10,31 @@
  * @property {String} country
  */
 /**
+ * @typedef {Object} SOSContact
+ * @property {String} title
+ * @property {String} firstName
+ * @property {String} middleName
+ * @property {String} lastName
+ * @property {String} suffix
+ */
+/**
+ * @typedef {Object} SOSCustomerTaxStatus
+ * @property {Boolean} taxable
+ * @property {String} taxExemptReasonId
+ * @property {SOSTaxCode} taxCode
+ */
+/**
  * @typedef {Object} SOSCustomField
  * @property {Number} id
  * @property {String} name
  * @property {String} value
  * @property {String} dataType
+ */
+/**
+ * @typedef {Object} SOSTaxCode
+ * @property {Number} id
+ * @property {String} name
+ * @property {Boolean} active
  */
 /**
  * @typedef {Object} SOSTransaction
@@ -37,6 +57,24 @@ const sosObjects = {
 			{ name: 'country', type: 'string' }
 		]
 	},
+	contact: {
+		description: 'Contact information',
+		fields: [
+			{ name: 'title', type: 'string' },
+			{ name: 'firstName', type: 'string' },
+			{ name: 'middleName', type: 'string' },
+			{ name: 'lastName', type: 'string' },
+			{ name: 'suffix', type: 'string' }
+		]
+	},
+	customerTaxStatus: {
+		description: 'Tax Status and Tax Code Information.',
+		fields: [
+			{ name: 'taxable', type: 'boolean' },
+			{ name: 'taxExemptReasonId', type: 'string' },
+			{ name: 'taxCode', type: 'object', objectType: 'taxCode' }
+		]
+	},
 	customField: {
 		description: 'Custom fields follow the structure outlined below. On create or update transactions, the id, name, and datatype values cannot be updated.',
 		fields: [
@@ -44,6 +82,14 @@ const sosObjects = {
 			{ name: 'name', type: 'string' },
 			{ name: 'value', type: 'string' },
 			{ name: 'dataType', type: 'string' }
+		]
+	},
+	taxCode: {
+		description: 'Tax Code Information.',
+		fields: [
+			{ name: 'id', type: 'integer' },
+			{ name: 'name', type: 'string' },
+			{ name: 'active', type: 'boolean' }
 		]
 	},
 	transaction: {
@@ -485,7 +531,7 @@ exports.tables = [
 	{
 		name: 'builds',
 		description: 'A build transaction uses raw materials to assemble a finished good. This transaction results in a decrease in the inventory of the raw materials and an increase in the inventory of the assembled item.',
-		primary: true,
+		primary: false,
 		api: 'build',
 		supportsFromTo: true,
 		supportsCreatedSinceUpdatedSince: true,
@@ -1055,135 +1101,186 @@ exports.tables = [
 	},
 	{
 		name: 'customers',
+		description: 'Represents a customer record used for sales, billing, shipping, pricing, tax configuration, and QuickBooks synchronization. Includes contact information, addresses, payment terms, pricing tier, tax settings, custom fields, and optional QuickBooks metadata such as sync status and stored payment token details.',
+		primary: true,
+		api: 'customer',
+		supportsFromTo: false,
+		supportsCreatedSinceUpdatedSince: true,
+		sosObject: 'Customer',
+		sosApiUrl: 'https://developer.sosinventory.com/apidoc/Customer',
+		sosHelpUrl: 'https://help.sosinventory.com/v8-customer-management-and-the-customers-list',
 		fields: [
 			{
 				name: 'id',
+				description: 'Unique identifier for this record. Must not be provided when creating a customer.',
 				type: 'integer',
 				nulls: false,
 				unique: true
 			},
 			{
 				name: 'starred',
+				description: 'Indicates if this customer has been starred. A value of 0 = no star; 1 or 1-3 = starred. Star colors depend on application configuration. This could be 1 color of star or 3 colors of star. See company setting in the user guide for more details.',
 				type: 'integer'
 			},
 			{
 				name: 'syncToken',
+				description: 'Indicates the current version of this record. If you receive an error when updating a record, it is because your syncToken is for an older version of the record than that which is currently in the database. Please GET the latest version prior to updating.',
 				type: 'integer'
 			},
 			{
 				name: 'name',
+				description: 'The name by which you look up this customer.',
 				type: 'string'
 			},
 			{
 				name: 'fullname',
-				type: 'string'
+				description: 'Customer name with parent added.',
+				type: 'string',
+				readOnly: true
 			},
 			{
 				name: 'parent',
-				type: 'string'
+				description: 'Refers to the parent customer of this customer record.',
+				type: 'reference',
+				reference: { field: 'parentId', property: 'id', sourceTable: 'customers', sourceField: 'id' }
 			},
 			{
 				name: 'sublevel',
-				type: 'integer'
+				description: 'The number of levels between this customer and the highest-level customer.',
+				type: 'integer',
+				readOnly: true
 			},
 			{
 				name: 'email',
+				description: 'Self-explanatory.',
 				type: 'string'
 			},
 			{
 				name: 'website',
+				description: 'Include the entire address, like "http://www.acompany.com".',
 				type: 'string'
 			},
 			{
 				name: 'phone',
+				description: 'Self-explanatory. No format is enforced.',
 				type: 'string'
 			},
 			{
 				name: 'mobile',
+				description: 'Mobile phone number for the customer. No specific format is enforced.',
 				type: 'string'
 			},
 			{
 				name: 'altPhone',
+				description: 'Self-explanatory. No format is enforced.',
 				type: 'string'
 			},
 			{
 				name: 'fax',
+				description: 'Self-explanatory. No format is enforced.',
 				type: 'string'
 			},
 			{
 				name: 'companyName',
+				description: 'Self-explanatory.',
 				type: 'string'
 			},
 			{
 				name: 'portalPassword',
+				description: 'Password used by the customer to access the SOS customer portal, if enabled.',
 				type: 'string'
 			},
 			{
 				name: 'contact',
-				type: 'string'
+				description: 'Primary contact person associated with this customer, including name and title details.',
+				type: 'object',
+				objectType: sosObjects.contact
 			},
 			{
 				name: 'billing',
-				type: 'string'
+				description: 'The customer\'s billing address.',
+				type: 'object',
+				objectType: sosObjects.address
 			},
 			{
 				name: 'shipping',
-				type: 'string'
+				description: 'Customer\'s shipping address.',
+				type: 'object',
+				objectType: sosObjects.address
 			},
 			{
 				name: 'terms',
-				type: 'string'
+				description: 'Payment terms.',
+				type: 'reference',
+				reference: { field: 'termsId', property: 'id', sourceTable: 'terms', sourceField: 'id' }
 			},
 			{
 				name: 'priceTier',
-				type: 'string'
+				description: 'The price tier to which this customer has been assigned.',
+				type: 'reference',
+				reference: { field: 'priceTierId', property: 'id', sourceTable: 'priceTiers', sourceField: 'id' }
 			},
 			{
 				name: 'paymentMethod',
-				type: 'string'
+				description: 'The default method of payment for this customer.',
+				type: 'reference',
+				reference: { field: 'paymentMethodId', property: 'id', sourceTable: 'paymentMethods', sourceField: 'id' }
 			},
 			{
 				name: 'salesRep',
-				type: 'string'
+				description: 'Sales representative for this customer.',
+				type: 'reference',
+				reference: { field: 'salesRepId', property: 'id', sourceTable: 'salesReps', sourceField: 'id' }
 			},
 			{
 				name: 'customerType',
-				type: 'string'
+				description: 'Customer type classification assigned to this customer. May be a reference to a defined customer type or null if none is assigned.',
+				type: 'reference'
 			},
 			{
 				name: 'resaleNumber',
+				description: 'Self-explanatory.',
 				type: 'string'
 			},
 			{
 				name: 'contractorNumber',
+				description: 'Self-explanatory.',
 				type: 'string'
 			},
 			{
 				name: 'businessLicense',
+				description: 'Self-explanatory.',
 				type: 'string'
 			},
 			{
 				name: 'foundUsVia',
+				description: 'The advertising or marketing avenue that led the customer to your business.',
 				type: 'string'
 			},
 			{
 				name: 'currency',
-				type: 'string'
+				description: 'Currency used for transactions with this customer when multicurrency is enabled.',
+				type: 'reference'
 			},
 			{
 				name: 'tax',
-				type: 'string'
+				description: 'Taxability settings for this customer, including tax code and exempt‑reason details.',
+				type: 'object',
+				objectType: sosObjects.customerTaxStatus
 			},
 			{
 				name: 'creditHold',
-				type: 'integer'
+				description: 'True if customer is currently on credit hold, false if not.',
+				type: 'boolean'
 			},
 			{
 				name: 'billWithParent',
-				type: 'integer'
+				description: 'True if customer is to be billed with the parent customer. If false, this customer will be billed separately.',
+				type: 'boolean'
 			},
 			{
 				name: 'notes',
+				description: 'The company’s internal notes about the customer. These notes are not visible to the customer.',
 				type: 'string'
 			},
 			{
@@ -1194,71 +1291,74 @@ exports.tables = [
 			},
 			{
 				name: 'altAddresses',
-				type: 'string'
+				description: 'Additional saved addresses for this customer, used for internal reference or alternate shipping/billing destinations.',
+				type: 'array',
+				objectType: sosObjects.address
 			},
 			{
 				name: 'archived',
-				type: 'integer'
+				description: 'True if item is archived, false if not.',
+				type: 'boolean',
+				readOnly: true
 			},
 			{
 				name: 'hasChildren',
-				type: 'integer'
+				description: 'True if “child” customer records are associated with this customer, false if not.',
+				type: 'boolean',
+				readOnly: true
 			},
 			{
 				name: 'summaryOnly',
-				type: 'integer'
+				description: 'Indicates if the summary parameter was set when retrieving back this record',
+				type: 'boolean',
+				readOnly: true
 			},
 			{
 				name: 'isInQuickBooks',
-				type: 'integer'
+				description: 'Indicates whether this customer record exists in QuickBooks.',
+				type: 'boolean'
 			},
 			{
 				name: 'syncMessage',
-				type: 'string'
+				description: 'The sync error message if the last sync attempt failed with Quickbooks. This will be empty if synchronization is successful.',
+				type: 'string',
+				readOnly: true
 			},
 			{
 				name: 'lastSync',
-				type: 'string'
+				description: 'The last successful sync time (GMT) for this customer, if syncronizing with Quickbooks.',
+				type: 'timestamp',
+				readOnly: true
 			},
 			{
 				name: 'hasCardOnFile',
-				type: 'integer'
+				description: 'Indicates whether a payment card token is stored for this customer.',
+				type: 'boolean',
+				readOnly: true
 			},
 			{
 				name: 'lastFour',
-				type: 'string'
+				description: 'Last four digits of the customer’s stored payment card, if available.',
+				type: 'string',
+				readOnly: true
 			},
 			{
 				name: 'expMonth',
-				type: 'string'
+				description: 'Expiration month of the stored payment card.',
+				type: 'string',
+				readOnly: true
 			},
 			{
 				name: 'expYear',
-				type: 'string'
+				description: 'Expiration year of the stored payment card.',
+				type: 'string',
+				readOnly: true
 			},
 			{
 				name: 'tokenType',
-				type: 'string'
-			},
-			{
-				name: 'parentId',
-				type: 'integer'
-			},
-			{
-				name: 'termsId',
-				type: 'integer'
-			},
-			{
-				name: 'priceTierId',
-				type: 'integer'
-			},
-			{
-				name: 'paymentMethodId',
-				type: 'integer'
-			},
-			{
-				name: 'salesRepId',
-				type: 'integer'
+				description: 'Type of stored payment token (e.g., credit card, ACH), if applicable.',
+				type: 'string',
+				readOnly: true
 			}
 		],
 		primaryKey: ['id']
