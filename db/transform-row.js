@@ -61,7 +61,17 @@ module.exports = function transformRow(engine, tableDef, sosObject) {
 	// PASS 2 — synthetic FK fields appended at the end
 	for (const field of tableDef.fields) {
 		if (field.type === 'reference' && field.reference) {
-			const refObj = sosObject[field.name]
+			let refObj = sosObject[field.name]
+
+			// unwrap single-element arrays (SOS quirk)
+			if (Array.isArray(refObj)) {
+				if (refObj.length === 1 && typeof refObj[0] === 'object' && refObj[0] !== null) {
+					refObj = refObj[0]
+				} else {
+					refObj = null
+				}
+			}
+
 			const fkName = field.reference.field
 			const fkValue = refObj?.[field.reference.property] ?? null
 			row[fkName] = fkValue

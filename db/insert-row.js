@@ -41,7 +41,17 @@ async function insertSidecarRows(engine, field, sosObject, mainRow) {
 				if (scField.source === 'new') {
 					value = null
 				} else if (scField.source === 'object') {
-					const raw = item[scField.property]
+					let raw = item[scField.property]
+
+					// unwrap single-element arrays (SOS quirk)
+					if (Array.isArray(raw)) {
+						if (raw.length === 1 && typeof raw[0] === 'object' && raw[0] !== null) {
+							raw = raw[0]
+						} else {
+							raw = null
+						}
+					}
+
 					if (scField.type === 'reference') {
 						const fk = extractReferenceValue(raw, scField)
 						row[scField.reference.field] = fk

@@ -1,10 +1,27 @@
 /**
  * @typedef {Object} SOSAddress
- * @property {string} line1
- * @property {string} line2
- * @property {string} city
- * @property {string} postalCode
- * @property {string} country
+ * @property {String} line1
+ * @property {String} line2
+ * @property {String} line3
+ * @property {String} line4
+ * @property {String} line5
+ * @property {String} city
+ * @property {String} postalCode
+ * @property {String} country
+ */
+/**
+ * @typedef {Object} SOSCustomField
+ * @property {Number} id
+ * @property {String} name
+ * @property {String} value
+ * @property {String} dataType
+ */
+/**
+ * @typedef {Object} SOSTransaction
+ * @property {Number} id
+ * @property {String} transactionType
+ * @property {String} refNumber
+ * @property {Number} linenumber
  */
 const sosObjects = {
 	address: {
@@ -18,6 +35,24 @@ const sosObjects = {
 			{ name: 'stateProvince', type: 'string' },
 			{ name: 'postalCode', type: 'string' },
 			{ name: 'country', type: 'string' }
+		]
+	},
+	customField: {
+		description: 'Custom fields follow the structure outlined below. On create or update transactions, the id, name, and datatype values cannot be updated.',
+		fields: [
+			{ name: 'id', type: 'integer' },
+			{ name: 'name', type: 'string' },
+			{ name: 'value', type: 'string' },
+			{ name: 'dataType', type: 'string' }
+		]
+	},
+	transaction: {
+		description: 'Linked transaction objects represent a transaction that is linked to the current transaction or line.',
+		fields: [
+			{ name: 'id', type: 'integer' },
+			{ name: 'transactionType', type: 'string' },
+			{ name: 'refNumber', type: 'string' },
+			{ name: 'linenumber', type: 'integer' }
 		]
 	}
 }
@@ -147,7 +182,7 @@ exports.tables = [
 	{
 		name: 'adjustments',
 		description: 'Inventory adjustments allow you to modify the quantity and/or cost basis of inventory on hand. You should use inventory adjustments sparingly, as most often inventory will be added or removed through item receipts and shipments.',
-		primary: true,
+		primary: false,
 		api: 'adjustment',
 		supportsFromTo: true,
 		supportsCreatedSinceUpdatedSince: true,
@@ -213,7 +248,8 @@ exports.tables = [
 			{
 				name: 'customFields',
 				description: 'The list of custom fields for this object type.',
-				type: 'array'
+				type: 'array',
+				objectType: sosObjects.customField
 			},
 			{
 				name: 'archived',
@@ -448,100 +484,468 @@ exports.tables = [
 	},
 	{
 		name: 'builds',
+		description: 'A build transaction uses raw materials to assemble a finished good. This transaction results in a decrease in the inventory of the raw materials and an increase in the inventory of the assembled item.',
+		primary: true,
+		api: 'build',
+		supportsFromTo: true,
+		supportsCreatedSinceUpdatedSince: true,
+		sosObject: 'Build',
+		sosApiUrl: 'https://developer.sosinventory.com/apidoc/Build',
+		sosHelpUrl: 'https://help.sosinventory.com/v9-builds-and-the-builds-list',
 		fields: [
 			{
 				name: 'id',
+				description: 'Unique identifier for this record. Must not be provided on create transactions.',
 				type: 'integer',
 				nulls: false,
 				unique: true
 			},
 			{
 				name: 'starred',
+				description: 'Indicates if this transaction has been starred. A value of 0 = no star; 1 or 1-3 = starred. Star colors depend on application configuration. This could be one color of star or three colors of stars. See Company Settings in the user guide for more details.',
 				type: 'integer'
 			},
 			{
 				name: 'syncToken',
+				description: 'Indicates the current version of this record. If you receive an error when updating a record, it is because your syncToken is for an older version of the record than that which is currently in the database. Please GET the latest version prior to updating.',
 				type: 'integer'
 			},
 			{
 				name: 'number',
+				description: 'The build number for this record. If you wish to use the automatic numbering capability on creation of an build, pass the string “auto”.',
 				type: 'string'
 			},
 			{
 				name: 'date',
-				type: 'string'
+				description: 'Transaction date.',
+				type: 'timestamp'
 			},
 			{
 				name: 'location',
-				type: 'string'
+				description: 'Location for this transaction.',
+				type: 'reference',
+				reference: { field: 'locationId', property: 'id', sourceTable: 'locations', sourceField: 'id' }
 			},
 			{
 				name: 'job',
-				type: 'string'
+				description: 'The job for this line, if enabled.',
+				type: 'reference',
+				reference: { field: 'jobId', property: 'id', sourceTable: 'jobs', sourceField: 'id' }
 			},
 			{
 				name: 'workcenter',
-				type: 'string'
+				description: 'The related work center for the job.',
+				type: 'reference',
+				reference: { field: 'workCenterId', property: 'id', sourceTable: 'workCenters', sourceField: 'id' }
 			},
 			{
 				name: 'department',
-				type: 'string'
+				description: 'The department for this transaction.',
+				type: 'reference',
+				reference: { field: 'departmentId', property: 'id', sourceTable: 'departments', sourceField: 'id' }
 			},
 			{
 				name: 'linkedTransaction',
-				type: 'string'
+				description: 'The transaction linked to this line.',
+				type: 'object'
 			},
 			{
 				name: 'linkedWorkOrder',
-				type: 'string'
+				description: 'The related work order for this build.',
+				type: 'reference',
+				reference: { field: 'linkedWorkOrderId', property: 'id', sourceTable: 'workOrders', sourceField: 'id' }
 			},
 			{
 				name: 'comment',
+				description: 'Comment field about transaction. For in-house use.',
 				type: 'string'
 			},
 			{
 				name: 'customFields',
-				type: 'string'
+				description: 'The list of custom fields for this object type.',
+				type: 'array',
+				objectType: sosObjects.customField
 			},
 			{
 				name: 'total',
+				description: 'Total inputs on this build.',
 				type: 'decimal'
 			},
 			{
 				name: 'archived',
-				type: 'integer'
+				description: 'True if item is archived, false if not.',
+				type: 'boolean',
+				readOnly: true
 			},
 			{
 				name: 'summaryOnly',
-				type: 'integer'
+				description: 'True if the summary parameter was set when this record was retrieved. False if not.',
+				type: 'boolean',
+				readOnly: true
 			},
 			{
 				name: 'hasSignature',
-				type: 'integer'
+				description: 'Reserved for future use.',
+				type: 'boolean',
+				readOnly: true
 			},
 			{
 				name: 'outputs',
-				type: 'string'
+				description: 'The output line for this build. See object structure below.',
+				type: 'array',
+				sidecar: {
+					table: 'buildOutputItems',
+					fields: [
+						{
+							name: 'id',
+							description: 'The unique identifier for this adjustment line item. ID field is ignored on create requests.',
+							type: 'integer',
+							source: 'object',
+							property: 'id'
+						},
+						{
+							name: 'linenumber',
+							description: 'The line number for this line on the adjustment transaction.',
+							type: 'integer',
+							source: 'object',
+							property: 'linenumber'
+						},
+						{
+							name: 'item',
+							description: 'The item this line represents.',
+							type: 'reference',
+							reference: { field: 'itemId', property: 'id', sourceTable: 'items', sourceField: 'id' },
+							source: 'object',
+							property: 'item'
+						},
+						{
+							name: 'class',
+							description: 'The class for this line.',
+							type: 'reference',
+							reference: { field: 'classId', property: 'id', sourceTable: 'classes', sourceField: 'id' },
+							source: 'object',
+							property: 'class'
+						},
+						{
+							name: 'job',
+							description: 'The job for this line, if enabled.',
+							type: 'reference',
+							reference: { field: 'jobId', property: 'id', sourceTable: 'jobs', sourceField: 'id' },
+							source: 'object',
+							property: 'job'
+						},
+						{
+							name: 'workcenter',
+							description: 'The related work center for the job.',
+							type: 'reference',
+							reference: { field: 'workCenterId', property: 'id', sourceTable: 'workCenters', sourceField: 'id' },
+							source: 'object',
+							property: 'workcenter'
+						},
+						{
+							name: 'worker',
+							description: 'The worker assigned to this line.',
+							type: 'reference',
+							reference: { field: 'workerId', property: 'id', sourceTable: 'workers', sourceField: 'id' },
+							source: 'object',
+							property: 'worker'
+						},
+						{
+							name: 'tax',
+							description: 'Unused',
+							type: 'object',
+							source: 'object',
+							property: 'tax'
+						},
+						{
+							name: 'linkedTransaction',
+							description: 'The transaction linked to this line.',
+							type: 'object',
+							objectType: sosObjects.transaction,
+							source: 'object',
+							property: 'linkedTransaction'
+						},
+						{
+							name: 'description',
+							description: 'The item description.',
+							type: 'string',
+							source: 'object',
+							property: 'description'
+						},
+						{
+							name: 'notes',
+							description: 'Notes for this build. Used on input lines.',
+							type: 'string',
+							source: 'object',
+							property: 'notes'
+						},
+						{
+							name: 'quantity',
+							description: 'The quantity for this line.',
+							type: 'decimal',
+							source: 'object',
+							property: 'quantity'
+						},
+						{
+							name: 'weight',
+							description: 'The weight of this line.',
+							type: 'decimal',
+							source: 'object',
+							property: 'weight',
+							readOnly: true
+						},
+						{
+							name: 'volume',
+							description: 'The volume of this line.',
+							type: 'decimal',
+							source: 'object',
+							property: 'volume',
+							readOnly: true
+						},
+						{
+							name: 'weightunit',
+							description: 'The unit for the item\'s weight value.',
+							type: 'string',
+							source: 'object',
+							property: 'weightunit',
+							readOnly: true
+						},
+						{
+							name: 'volumeunit',
+							description: 'The unit for the volume value.',
+							type: 'string',
+							source: 'object',
+							property: 'volumeunit',
+							readOnly: true
+						},
+						{
+							name: 'waste',
+							description: 'Unused.',
+							type: 'boolean',
+							source: 'object',
+							property: 'waste',
+							readOnly: true
+						},
+						{
+							name: 'uom',
+							description: 'The unit of measure for this line.',
+							type: 'reference',
+							reference: { field: 'unitsOfMeasureId', property: 'id', sourceTable: 'unitsOfMeasure', sourceField: 'id' },
+							source: 'object',
+							property: 'uom'
+						},
+						{
+							name: 'bin',
+							description: 'The bin used for this item build.',
+							type: 'reference',
+							reference: { field: 'binId', property: 'id', sourceTable: 'bins', sourceField: 'id' },
+							source: 'object',
+							property: 'bin'
+						},
+						{
+							name: 'lot',
+							description: 'The lot used for this item build.',
+							type: 'reference',
+							reference: { field: 'lotId', property: 'id', sourceTable: 'lots', sourceField: 'id' },
+							source: 'object',
+							property: 'lot'
+						},
+						{
+							name: 'lotExpiration',
+							description: 'The date this lot expires.',
+							type: 'timestamp',
+							source: 'object',
+							property: 'lotExpiration'
+						},
+						{
+							name: 'serials',
+							description: 'The serials being used or built for this item.',
+							type: 'array',
+							source: 'object',
+							property: 'serials'
+						}
+					],
+					primaryKey: ['id']
+				}
 			},
 			{
 				name: 'inputs',
-				type: 'string'
-			},
-			{
-				name: 'locationId',
-				type: 'integer'
-			},
-			{
-				name: 'jobId',
-				type: 'integer'
-			},
-			{
-				name: 'workCenterId',
-				type: 'integer'
-			},
-			{
-				name: 'departmentId',
-				type: 'integer'
+				description: 'The input lines for this build. See object structure below.',
+				type: 'array',
+				sidecar: {
+					table: 'buildInputItems',
+					fields: [
+						{
+							name: 'id',
+							description: 'The unique identifier for this adjustment line item. ID field is ignored on create requests.',
+							type: 'integer',
+							source: 'object',
+							property: 'id'
+						},
+						{
+							name: 'linenumber',
+							description: 'The line number for this line on the adjustment transaction.',
+							type: 'integer',
+							source: 'object',
+							property: 'linenumber'
+						},
+						{
+							name: 'item',
+							description: 'The item this line represents.',
+							type: 'reference',
+							reference: { field: 'itemId', property: 'id', sourceTable: 'items', sourceField: 'id' },
+							source: 'object',
+							property: 'item'
+						},
+						{
+							name: 'class',
+							description: 'The class for this line.',
+							type: 'reference',
+							reference: { field: 'classId', property: 'id', sourceTable: 'classes', sourceField: 'id' },
+							source: 'object',
+							property: 'class'
+						},
+						{
+							name: 'job',
+							description: 'The job for this line, if enabled.',
+							type: 'reference',
+							reference: { field: 'jobId', property: 'id', sourceTable: 'jobs', sourceField: 'id' },
+							source: 'object',
+							property: 'job'
+						},
+						{
+							name: 'workcenter',
+							description: 'The related work center for the job.',
+							type: 'reference',
+							reference: { field: 'workCenterId', property: 'id', sourceTable: 'workCenters', sourceField: 'id' },
+							source: 'object',
+							property: 'workcenter'
+						},
+						{
+							name: 'worker',
+							description: 'The worker assigned to this line.',
+							type: 'reference',
+							reference: { field: 'workerId', property: 'id', sourceTable: 'workers', sourceField: 'id' },
+							source: 'object',
+							property: 'worker'
+						},
+						{
+							name: 'tax',
+							description: 'Unused',
+							type: 'object',
+							source: 'object',
+							property: 'tax'
+						},
+						{
+							name: 'linkedTransaction',
+							description: 'The transaction linked to this line.',
+							type: 'object',
+							objectType: sosObjects.transaction,
+							source: 'object',
+							property: 'linkedTransaction'
+						},
+						{
+							name: 'description',
+							description: 'The item description.',
+							type: 'string',
+							source: 'object',
+							property: 'description'
+						},
+						{
+							name: 'notes',
+							description: 'Notes for this build. Used on input lines.',
+							type: 'string',
+							source: 'object',
+							property: 'notes'
+						},
+						{
+							name: 'quantity',
+							description: 'The quantity for this line.',
+							type: 'decimal',
+							source: 'object',
+							property: 'quantity'
+						},
+						{
+							name: 'weight',
+							description: 'The weight of this line.',
+							type: 'decimal',
+							source: 'object',
+							property: 'weight',
+							readOnly: true
+						},
+						{
+							name: 'volume',
+							description: 'The volume of this line.',
+							type: 'decimal',
+							source: 'object',
+							property: 'volume',
+							readOnly: true
+						},
+						{
+							name: 'weightunit',
+							description: 'The unit for the item\'s weight value.',
+							type: 'string',
+							source: 'object',
+							property: 'weightunit',
+							readOnly: true
+						},
+						{
+							name: 'volumeunit',
+							description: 'The unit for the volume value.',
+							type: 'string',
+							source: 'object',
+							property: 'volumeunit',
+							readOnly: true
+						},
+						{
+							name: 'waste',
+							description: 'Unused.',
+							type: 'boolean',
+							source: 'object',
+							property: 'waste',
+							readOnly: true
+						},
+						{
+							name: 'uom',
+							description: 'The unit of measure for this line.',
+							type: 'reference',
+							reference: { field: 'unitsOfMeasureId', property: 'id', sourceTable: 'unitsOfMeasure', sourceField: 'id' },
+							source: 'object',
+							property: 'uom'
+						},
+						{
+							name: 'bin',
+							description: 'The bin used for this item build.',
+							type: 'reference',
+							reference: { field: 'binId', property: 'id', sourceTable: 'bins', sourceField: 'id' },
+							source: 'object',
+							property: 'bin'
+						},
+						{
+							name: 'lot',
+							description: 'The lot used for this item build.',
+							type: 'reference',
+							reference: { field: 'lotId', property: 'id', sourceTable: 'lots', sourceField: 'id' },
+							source: 'object',
+							property: 'lot'
+						},
+						{
+							name: 'lotExpiration',
+							description: 'The date this lot expires.',
+							type: 'timestamp',
+							source: 'object',
+							property: 'lotExpiration'
+						},
+						{
+							name: 'serials',
+							description: 'The serials being used or built for this item.',
+							type: 'array',
+							source: 'object',
+							property: 'serials'
+						}
+					],
+					primaryKey: ['id']
+				}
 			}
 		],
 		primaryKey: ['id']
@@ -784,7 +1188,9 @@ exports.tables = [
 			},
 			{
 				name: 'customFields',
-				type: 'string'
+				description: 'The list of custom fields for this object type.',
+				type: 'array',
+				objectType: sosObjects.customField
 			},
 			{
 				name: 'altAddresses',
@@ -1013,7 +1419,9 @@ exports.tables = [
 			},
 			{
 				name: 'customFields',
-				type: 'string'
+				description: 'The list of custom fields for this object type.',
+				type: 'array',
+				objectType: sosObjects.customField
 			},
 			{
 				name: 'depositAmount',
@@ -1225,7 +1633,9 @@ exports.tables = [
 			},
 			{
 				name: 'customFields',
-				type: 'string'
+				description: 'The list of custom fields for this object type.',
+				type: 'array',
+				objectType: sosObjects.customField
 			},
 			{
 				name: 'customerPO',
@@ -1437,7 +1847,9 @@ exports.tables = [
 			},
 			{
 				name: 'customFields',
-				type: 'string'
+				description: 'The list of custom fields for this object type.',
+				type: 'array',
+				objectType: sosObjects.customField
 			},
 			{
 				name: 'depositAmount',
@@ -1860,7 +2272,8 @@ exports.tables = [
 			{
 				name: 'customFields',
 				description: 'The list of custom fields for this object type.',
-				type: 'array'
+				type: 'array',
+				objectType: sosObjects.customField
 			},
 			{
 				name: 'uoms',
@@ -2102,7 +2515,9 @@ exports.tables = [
 			},
 			{
 				name: 'customFields',
-				type: 'string'
+				description: 'The list of custom fields for this object type.',
+				type: 'array',
+				objectType: sosObjects.customField
 			}
 		],
 		primaryKey: ['id']
@@ -2271,7 +2686,9 @@ exports.tables = [
 			},
 			{
 				name: 'customFields',
-				type: 'string'
+				description: 'The list of custom fields for this object type.',
+				type: 'array',
+				objectType: sosObjects.customField
 			},
 			{
 				name: 'onHand',
@@ -2440,7 +2857,9 @@ exports.tables = [
 			},
 			{
 				name: 'customFields',
-				type: 'string'
+				description: 'The list of custom fields for this object type.',
+				type: 'array',
+				objectType: sosObjects.customField
 			},
 			{
 				name: 'pickBy',
@@ -2629,7 +3048,9 @@ exports.tables = [
 			},
 			{
 				name: 'customFields',
-				type: 'string'
+				description: 'The list of custom fields for this object type.',
+				type: 'array',
+				objectType: sosObjects.customField
 			},
 			{
 				name: 'total',
@@ -2781,7 +3202,9 @@ exports.tables = [
 			},
 			{
 				name: 'customFields',
-				type: 'string'
+				description: 'The list of custom fields for this object type.',
+				type: 'array',
+				objectType: sosObjects.customField
 			},
 			{
 				name: 'depositAmount',
@@ -2949,7 +3372,9 @@ exports.tables = [
 			},
 			{
 				name: 'customFields',
-				type: 'string'
+				description: 'The list of custom fields for this object type.',
+				type: 'array',
+				objectType: sosObjects.customField
 			},
 			{
 				name: 'archived',
@@ -3105,7 +3530,9 @@ exports.tables = [
 			},
 			{
 				name: 'customFields',
-				type: 'string'
+				description: 'The list of custom fields for this object type.',
+				type: 'array',
+				objectType: sosObjects.customField
 			},
 			{
 				name: 'customerPO',
@@ -3309,7 +3736,9 @@ exports.tables = [
 			},
 			{
 				name: 'customFields',
-				type: 'string'
+				description: 'The list of custom fields for this object type.',
+				type: 'array',
+				objectType: sosObjects.customField
 			},
 			{
 				name: 'shipBy',
@@ -3429,7 +3858,9 @@ exports.tables = [
 			},
 			{
 				name: 'customFields',
-				type: 'string'
+				description: 'The list of custom fields for this object type.',
+				type: 'array',
+				objectType: sosObjects.customField
 			},
 			{
 				name: 'total',
@@ -3561,7 +3992,9 @@ exports.tables = [
 			},
 			{
 				name: 'customFields',
-				type: 'string'
+				description: 'The list of custom fields for this object type.',
+				type: 'array',
+				objectType: sosObjects.customField
 			},
 			{
 				name: 'total',
@@ -3737,7 +4170,9 @@ exports.tables = [
 			},
 			{
 				name: 'customFields',
-				type: 'string'
+				description: 'The list of custom fields for this object type.',
+				type: 'array',
+				objectType: sosObjects.customField
 			},
 			{
 				name: 'customerPO',
@@ -3977,7 +4412,9 @@ exports.tables = [
 			},
 			{
 				name: 'customFields',
-				type: 'string'
+				description: 'The list of custom fields for this object type.',
+				type: 'array',
+				objectType: sosObjects.customField
 			},
 			{
 				name: 'customerPO',
@@ -4226,7 +4663,9 @@ exports.tables = [
 			},
 			{
 				name: 'customFields',
-				type: 'string'
+				description: 'The list of custom fields for this object type.',
+				type: 'array',
+				objectType: sosObjects.customField
 			},
 			{
 				name: 'itemId',
@@ -4326,7 +4765,9 @@ exports.tables = [
 			},
 			{
 				name: 'customFields',
-				type: 'string'
+				description: 'The list of custom fields for this object type.',
+				type: 'array',
+				objectType: sosObjects.customField
 			},
 			{
 				name: 'customerPO',
@@ -4642,7 +5083,9 @@ exports.tables = [
 			},
 			{
 				name: 'customFields',
-				type: 'string'
+				description: 'The list of custom fields for this object type.',
+				type: 'array',
+				objectType: sosObjects.customField
 			},
 			{
 				name: 'archived',
@@ -4875,7 +5318,9 @@ exports.tables = [
 			},
 			{
 				name: 'customFields',
-				type: 'string'
+				description: 'The list of custom fields for this object type.',
+				type: 'array',
+				objectType: sosObjects.customField
 			},
 			{
 				name: 'altAddresses',
@@ -5094,7 +5539,9 @@ exports.tables = [
 			},
 			{
 				name: 'customFields',
-				type: 'string'
+				description: 'The list of custom fields for this object type.',
+				type: 'array',
+				objectType: sosObjects.customField
 			},
 			{
 				name: 'total',
