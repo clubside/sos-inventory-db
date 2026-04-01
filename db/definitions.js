@@ -37,6 +37,11 @@
  * @property {Boolean} active
  */
 /**
+ * @typedef {Object} SOSTaxInformation
+ * @property {Boolean} taxable
+ * @property {SOSTaxCode} taxCode
+ */
+/**
  * @typedef {Object} SOSTransaction
  * @property {Number} id
  * @property {String} transactionType
@@ -99,6 +104,13 @@ const sosObjects = {
 			{ name: 'id', type: 'integer' },
 			{ name: 'name', type: 'string' },
 			{ name: 'active', type: 'boolean' }
+		]
+	},
+	taxInformation: {
+		description: 'Tax information types are used to capture details on the taxability and tax code for a transaction or line.',
+		fields: [
+			{ name: 'taxable', type: 'boolean' },
+			{ name: 'taxCode', type: 'object', objectType: 'taxCode' }
 		]
 	},
 	transaction: {
@@ -187,6 +199,7 @@ const sosObjects = {
 /**
  * @typedef {Object} SOSTable
  * @property {String} name - name of the table
+ * @property {String} [sosObject] - name of the SOS Inventory API object
  * @property {String} description - description of the table
  * @property {Boolean} [primary] - whether the table should be grouped as part of SOS Inventory's Primary objects
  * @property {Boolean} [reference] - whether the table should be grouped as part of SOS Inventory's Reference objects
@@ -194,7 +207,6 @@ const sosObjects = {
  * @property {SOSAPI} [api] - SOS Inventory API definition
  * @property {Boolean} [supportsFromTo] - whether the API supports from and to parameters
  * @property {Boolean} [supportsCreatedSinceUpdatedSince] - whether the API supports createdsince and updatedsince parameters
- * @property {String} [sosObject] - name of the SOS Inventory API object
  * @property {String} [sosApiUrl] - link to SOS Inventory API developer page
  * @property {String} [sosHelpUrl] - link to SOS Inventory help page
  * @property {SOSField[]} fields - field definitions for the table
@@ -4367,59 +4379,158 @@ exports.tables = [
 	},
 	{
 		name: 'processes',
+		sosObject: 'Process',
+		description: 'Processes in SOS Inventory can have an unlimited number of inputs and outputs. This gives you the flexibility to handle not only simple manufacturing (multiple inputs into one output) but also disassembly (where one input produces many outputs) and processes with by-products (multiple inputs into multiple outputs).',
+		primary: true,
+		api: {
+			query: {
+				endpoint: '/api/v2/process',
+				description: 'Returns a list of process objects.',
+				method: 'GET',
+				results: [
+					{
+						name: 'count',
+						description: 'The number of results returned in this query.',
+						type: 'integer'
+					},
+					{
+						name: 'totalCount',
+						description: 'The total number of records that match the filters of this query.',
+						type: 'integer'
+					},
+					{
+						name: 'data',
+						description: 'An array of invoice objects.',
+						type: 'array'
+					},
+					{
+						name: 'status',
+						description: 'The status of the query. Will be “ok” if successful, otherwise this matches with the message field to indicate why the call failed.',
+						type: 'string'
+					},
+					{
+						name: 'message',
+						description: 'A descriptive message indicating why the query was unsuccessful.',
+						type: 'string'
+					}
+				],
+				arguments: [
+					{
+						name: 'start',
+						description: 'A cursor used in pagination. This is the row number of the full set of results. The API limits results to a max of 200 results per call. If you want to retrieve the next set of results you can use this parameter to retrive the next set of results. For example if you are retrieving 200 results at a time, you can set start=201 to retrieve the next page of results.',
+						type: 'integer'
+					},
+					{
+						name: 'maxresults',
+						description: 'The maximum number of results you want to return. The default is 200, the maximum value allowed.',
+						type: 'integer'
+					},
+					{
+						name: 'summary',
+						description: 'If this parameter is present (the value doesn\'t matter, and doesn\'t need to be specified), only the summary attributes of the estimate will be returned.',
+						type: 'string'
+					},
+					{
+						name: 'query',
+						description: 'This parameter will filter the results by matches of the string on the following fields: number, id, comment, location name, or process name.',
+						type: 'string'
+					},
+					{
+						name: 'archived',
+						description: 'A "yes" returns archived records only; a "no" returns only those that have not been archived.',
+						type: 'string'
+					},
+					{
+						name: 'from/to',
+						description: 'Returns records based on the beginning and ending transaction dates specified. Both parameters are optional. Using only one parameter allows filtering in one direction. Example: from=2019-09-01T00:00:00&to=2019-09-10T00:00:00',
+						type: 'timestamp'
+					},
+					{
+						name: 'location',
+						description: 'Filters transactions according to the name of the location.',
+						type: 'string'
+					},
+					{
+						name: 'createdsince/updatedsince',
+						description: 'Filters transactions created or updated since a specified date/time.',
+						type: 'timestamp'
+					}
+				]
+			}
+		},
+		sosApiUrl: 'https://developer.sosinventory.com/apidoc/Process',
+		sosHelpUrl: 'https://help.sosinventory.com/v8-processes-and-the-processes-list',
 		fields: [
 			{
 				name: 'id',
+				description: 'Unique identifier for this record. Must not be provided on create transactions.',
 				type: 'integer',
 				nulls: false,
 				unique: true
 			},
 			{
 				name: 'starred',
+				description: 'Indicates if this transaction has been starred. A value of 0 = no star; 1 or 1-3 = starred. Star colors depend on application configuration. This could be one color of star or three colors of stars. See Company Settings in the user guide for more details.',
 				type: 'integer'
 			},
 			{
 				name: 'syncToken',
+				description: 'Indicates the current version of this record. If you receive an error when updating a record, it is because your syncToken is for an older version of the record than that which is currently in the database. Please GET the latest version prior to updating.',
 				type: 'integer'
 			},
 			{
 				name: 'number',
+				description: 'The process number for this record. If you wish to use the automatic numbering capability on creation of an process, pass the string “auto”.',
 				type: 'string'
 			},
 			{
 				name: 'date',
-				type: 'string'
+				description: 'Transaction date.',
+				type: 'timestamp'
 			},
 			{
 				name: 'startDate',
-				type: 'string'
+				description: 'Start date for this transaction.',
+				type: 'timestamp'
 			},
 			{
 				name: 'location',
-				type: 'string'
+				description: 'Location for this transaction.',
+				type: 'reference',
+				reference: { field: 'locationId', property: 'id', sourceTable: 'locations', sourceField: 'id' }
 			},
 			{
 				name: 'job',
-				type: 'string'
+				description: 'The job for this line, if enabled.',
+				type: 'reference',
+				reference: { field: 'jobId', property: 'id', sourceTable: 'jobs', sourceField: 'id' }
 			},
 			{
 				name: 'workcenter',
-				type: 'string'
+				description: 'The related work center for the job.',
+				type: 'reference',
+				reference: { field: 'workCenterId', property: 'id', sourceTable: 'workCenters', sourceField: 'id' }
 			},
 			{
 				name: 'department',
-				type: 'string'
+				description: 'The department for this transaction.',
+				type: 'reference',
+				reference: { field: 'departmentId', property: 'id', sourceTable: 'departments', sourceField: 'id' }
 			},
 			{
 				name: 'linkedTransaction',
-				type: 'string'
+				description: 'The transaction linked to this line.',
+				type: 'object',
+				objectType: sosObjects.transaction
 			},
 			{
 				name: 'linkedWorkOrders',
-				type: 'string'
+				description: 'Array of Work Orders linked to this Process as part of the production workflow.',
+				type: 'array'
 			},
 			{
 				name: 'comment',
+				description: 'Comment field about transaction. For in-house use.',
 				type: 'string'
 			},
 			{
@@ -4430,55 +4541,387 @@ exports.tables = [
 			},
 			{
 				name: 'total',
+				description: 'Total inputs on this process.',
 				type: 'decimal'
 			},
 			{
 				name: 'yield',
+				description: 'The production yield for this Process step, expressed as a decimal ratio.',
 				type: 'decimal'
 			},
 			{
 				name: 'archived',
-				type: 'integer'
+				description: 'True if item is archived, false if not.',
+				type: 'boolean',
+				readOnly: true
 			},
 			{
 				name: 'summaryOnly',
-				type: 'integer'
+				description: 'True if the summary parameter was set when this record was retrieved. False if not.',
+				type: 'boolean',
+				readOnly: true
 			},
 			{
 				name: 'hasSignature',
-				type: 'integer'
+				description: 'Reserved for future use.',
+				type: 'boolean',
+				readOnly: true
 			},
 			{
 				name: 'template',
-				type: 'string'
+				description: 'The template used to create this transaction. The API currently does not support creating a transaction from a template.',
+				type: 'reference'
 			},
 			{
 				name: 'multiplier',
+				description: 'The multiplier factor used to modify this transaction. Setting this value does not change anything on this transaction. It is used only as a reference for the multiplier used.',
 				type: 'decimal'
 			},
 			{
 				name: 'outputs',
-				type: 'string'
+				description: 'The output line for this process.',
+				type: 'array',
+				sidecar: {
+					table: 'processOutputItems',
+					fields: [
+						{
+							name: 'id',
+							description: 'The unique identifier for this line item. ID field is ignored on create requests.',
+							type: 'integer',
+							source: 'object',
+							property: 'id'
+						},
+						{
+							name: 'linenumber',
+							description: 'The line number for this line on the process transaction.',
+							type: 'integer',
+							source: 'object',
+							property: 'linenumber'
+						},
+						{
+							name: 'item',
+							description: 'The item this line represents.',
+							type: 'reference',
+							reference: { field: 'itemId', property: 'id', sourceTable: 'items', sourceField: 'id' },
+							source: 'object',
+							property: 'item'
+						},
+						{
+							name: 'class',
+							description: 'The class for this line.',
+							type: 'reference',
+							reference: { field: 'classId', property: 'id', sourceTable: 'classes', sourceField: 'id' },
+							source: 'object',
+							property: 'class'
+						},
+						{
+							name: 'job',
+							description: 'The job for this line, if enabled.',
+							type: 'reference',
+							reference: { field: 'jobId', property: 'id', sourceTable: 'jobs', sourceField: 'id' },
+							source: 'object',
+							property: 'job'
+						},
+						{
+							name: 'workcenter',
+							description: 'The related work center for the job.',
+							type: 'reference',
+							reference: { field: 'workCenterId', property: 'id', sourceTable: 'workCenters', sourceField: 'id' },
+							source: 'object',
+							property: 'workcenter'
+						},
+						{
+							name: 'worker',
+							description: 'The worker assigned to this line.',
+							type: 'reference',
+							reference: { field: 'workerId', property: 'id', sourceTable: 'workers', sourceField: 'id' },
+							source: 'object',
+							property: 'worker'
+						},
+						{
+							name: 'tax',
+							description: 'Unused.',
+							type: 'object',
+							objectTypes: sosObjects.taxInformation,
+							source: 'object',
+							property: 'tax'
+						},
+						{
+							name: 'linkedTransaction',
+							description: 'The transaction linked to this line.',
+							type: 'object',
+							objectTypes: sosObjects.transaction,
+							source: 'object',
+							property: 'linkedTransaction'
+						},
+						{
+							name: 'description',
+							description: 'The item description.',
+							type: 'string',
+							source: 'object',
+							property: 'description'
+						},
+						{
+							name: 'notes',
+							description: 'Unused.',
+							type: 'string',
+							source: 'object',
+							property: 'notes'
+						},
+						{
+							name: 'quantity',
+							description: 'The quantity for this line.',
+							type: 'decimal',
+							source: 'object',
+							property: 'quantity'
+						},
+						{
+							name: 'weight',
+							description: 'The weight of this line.',
+							type: 'decimal',
+							source: 'object',
+							property: 'weight',
+							readOnly: true
+						},
+						{
+							name: 'volume',
+							description: 'The volume of this line.',
+							type: 'decimal',
+							source: 'object',
+							property: 'volume',
+							readOnly: true
+						},
+						{
+							name: 'weightunit',
+							description: 'The unit for the item\'s weight value.',
+							type: 'string',
+							source: 'object',
+							property: 'weightunit',
+							readOnly: true
+						},
+						{
+							name: 'volumeunit',
+							description: 'The unit for the volume value.',
+							type: 'string',
+							source: 'object',
+							property: 'volumeunit',
+							readOnly: true
+						},
+						{
+							name: 'waste',
+							description: 'True if this process produces waste, false if not.',
+							type: 'boolean',
+							source: 'object',
+							property: 'waste',
+							readOnly: true
+						},
+						{
+							name: 'uom',
+							description: 'The unit of measure for this line.',
+							type: 'reference',
+							reference: { field: 'unitsOfMeasureId', property: 'id', sourceTable: 'unitsOfMeasure', sourceField: 'id' },
+							source: 'object',
+							property: 'uom'
+						},
+						{
+							name: 'bin',
+							description: 'The bin used for this item process.',
+							type: 'reference',
+							reference: { field: 'binId', property: 'id', sourceTable: 'bins', sourceField: 'id' },
+							source: 'object',
+							property: 'bin'
+						},
+						{
+							name: 'lot',
+							description: 'The lot used for this item process.',
+							type: 'reference',
+							reference: { field: 'lotId', property: 'id', sourceTable: 'lots', sourceField: 'id' },
+							source: 'object',
+							property: 'lot'
+						},
+						{
+							name: 'serials',
+							description: 'The serial numbers used for this item process.',
+							type: 'array',
+							source: 'object',
+							property: 'serials'
+						}
+					],
+					primaryKey: ['id']
+				}
 			},
 			{
 				name: 'inputs',
-				type: 'string'
-			},
-			{
-				name: 'locationId',
-				type: 'integer'
-			},
-			{
-				name: 'jobId',
-				type: 'integer'
-			},
-			{
-				name: 'workCenterId',
-				type: 'integer'
-			},
-			{
-				name: 'departmentId',
-				type: 'integer'
+				description: 'The input lines for this process.',
+				type: 'array',
+				sidecar: {
+					table: 'processInputItems',
+					fields: [
+						{
+							name: 'id',
+							description: 'The unique identifier for this line item. ID field is ignored on create requests.',
+							type: 'integer',
+							source: 'object',
+							property: 'id'
+						},
+						{
+							name: 'linenumber',
+							description: 'The line number for this line on the process transaction.',
+							type: 'integer',
+							source: 'object',
+							property: 'linenumber'
+						},
+						{
+							name: 'item',
+							description: 'The item this line represents.',
+							type: 'reference',
+							reference: { field: 'itemId', property: 'id', sourceTable: 'items', sourceField: 'id' },
+							source: 'object',
+							property: 'item'
+						},
+						{
+							name: 'class',
+							description: 'The class for this line.',
+							type: 'reference',
+							reference: { field: 'classId', property: 'id', sourceTable: 'classes', sourceField: 'id' },
+							source: 'object',
+							property: 'class'
+						},
+						{
+							name: 'job',
+							description: 'The job for this line, if enabled.',
+							type: 'reference',
+							reference: { field: 'jobId', property: 'id', sourceTable: 'jobs', sourceField: 'id' },
+							source: 'object',
+							property: 'job'
+						},
+						{
+							name: 'workcenter',
+							description: 'The related work center for the job.',
+							type: 'reference',
+							reference: { field: 'workCenterId', property: 'id', sourceTable: 'workCenters', sourceField: 'id' },
+							source: 'object',
+							property: 'workcenter'
+						},
+						{
+							name: 'worker',
+							description: 'The worker assigned to this line.',
+							type: 'reference',
+							reference: { field: 'workerId', property: 'id', sourceTable: 'workers', sourceField: 'id' },
+							source: 'object',
+							property: 'worker'
+						},
+						{
+							name: 'tax',
+							description: 'Unused.',
+							type: 'object',
+							objectTypes: sosObjects.taxInformation,
+							source: 'object',
+							property: 'tax'
+						},
+						{
+							name: 'linkedTransaction',
+							description: 'The transaction linked to this line.',
+							type: 'object',
+							objectTypes: sosObjects.transaction,
+							source: 'object',
+							property: 'linkedTransaction'
+						},
+						{
+							name: 'description',
+							description: 'The item description.',
+							type: 'string',
+							source: 'object',
+							property: 'description'
+						},
+						{
+							name: 'notes',
+							description: 'Unused.',
+							type: 'string',
+							source: 'object',
+							property: 'notes'
+						},
+						{
+							name: 'quantity',
+							description: 'The quantity for this line.',
+							type: 'decimal',
+							source: 'object',
+							property: 'quantity'
+						},
+						{
+							name: 'weight',
+							description: 'The weight of this line.',
+							type: 'decimal',
+							source: 'object',
+							property: 'weight',
+							readOnly: true
+						},
+						{
+							name: 'volume',
+							description: 'The volume of this line.',
+							type: 'decimal',
+							source: 'object',
+							property: 'volume',
+							readOnly: true
+						},
+						{
+							name: 'weightunit',
+							description: 'The unit for the item\'s weight value.',
+							type: 'string',
+							source: 'object',
+							property: 'weightunit',
+							readOnly: true
+						},
+						{
+							name: 'volumeunit',
+							description: 'The unit for the volume value.',
+							type: 'string',
+							source: 'object',
+							property: 'volumeunit',
+							readOnly: true
+						},
+						{
+							name: 'waste',
+							description: 'True if this process produces waste, false if not.',
+							type: 'boolean',
+							source: 'object',
+							property: 'waste',
+							readOnly: true
+						},
+						{
+							name: 'uom',
+							description: 'The unit of measure for this line.',
+							type: 'reference',
+							reference: { field: 'unitsOfMeasureId', property: 'id', sourceTable: 'unitsOfMeasure', sourceField: 'id' },
+							source: 'object',
+							property: 'uom'
+						},
+						{
+							name: 'bin',
+							description: 'The bin used for this item process.',
+							type: 'reference',
+							reference: { field: 'binId', property: 'id', sourceTable: 'bins', sourceField: 'id' },
+							source: 'object',
+							property: 'bin'
+						},
+						{
+							name: 'lot',
+							description: 'The lot used for this item process.',
+							type: 'reference',
+							reference: { field: 'lotId', property: 'id', sourceTable: 'lots', sourceField: 'id' },
+							source: 'object',
+							property: 'lot'
+						},
+						{
+							name: 'serials',
+							description: 'The serial numbers used for this item process.',
+							type: 'array',
+							source: 'object',
+							property: 'serials'
+						}
+					],
+					primaryKey: ['id']
+				}
 			}
 		],
 		primaryKey: ['id']
