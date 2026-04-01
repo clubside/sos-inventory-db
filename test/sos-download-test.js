@@ -54,7 +54,7 @@ async function run() {
 	})
 
 	if (!result.ok) {
-		console.error('downloadSOS failed:', result.error)
+		console.error('downloadSOS failed:', result)
 		process.exitCode = 1
 	} else {
 		console.log('downloadSOS completed successfully')

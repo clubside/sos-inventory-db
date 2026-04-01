@@ -1464,9 +1464,83 @@ exports.tables = [
 		name: 'estimates',
 		description: 'An estimate is a quotation to a customer, or an offer to provide products or services at a specified price. The terms of an estimate (binding, non-binding, etc.) are set by your company policies.',
 		primary: true,
-		api: 'estimate',
-		supportsFromTo: true,
-		supportsCreatedSinceUpdatedSince: true,
+		api: {
+			endpoint: '/api/v2/estimate',
+			results: [
+				{
+					name: 'count',
+					description: 'The number of results returned in this query.',
+					type: 'integer'
+				},
+				{
+					name: 'totalCount',
+					description: 'The total number of records that match the filters of this query.',
+					type: 'integer'
+				},
+				{
+					name: 'data',
+					description: 'An array of invoice objects.',
+					type: 'array'
+				},
+				{
+					name: 'status',
+					description: 'The status of the query. Will be “ok” if successful, otherwise this matches with the message field to indicate why the call failed.',
+					type: 'string'
+				},
+				{
+					name: 'message',
+					description: 'A descriptive message indicating why the query was unsuccessful.',
+					type: 'string'
+				}
+			],
+			arguments: [
+				{
+					name: 'start',
+					description: 'A cursor used in pagination. This is the row number of the full set of results. The API limits results to a max of 200 results per call. If you want to retrieve the next set of results you can use this parameter to retrive the next set of results. For example if you are retrieving 200 results at a time, you can set start=201 to retrieve the next page of results.',
+					type: 'integer'
+				},
+				{
+					name: 'maxresults',
+					description: 'The maximum number of results you want to return. The default is 200, the maximum value allowed.',
+					type: 'integer'
+				},
+				{
+					name: 'status',
+					description: 'Filters the results by void status.',
+					type: 'string'
+				},
+				{
+					name: 'summary',
+					description: 'If this parameter is present (the value doesn\'t matter, and doesn\'t need to be specified), only the summary attributes of the estimate will be returned.',
+					type: 'string'
+				},
+				{
+					name: 'query',
+					description: 'This parameter will filter the results by matches of the string on the following fields: number, comment, customerPO, or customer name.',
+					type: 'string'
+				},
+				{
+					name: 'archived',
+					description: 'A "yes" returns archived records only; a "no" returns only those that have not been archived.',
+					type: 'string'
+				},
+				{
+					name: 'channel',
+					description: 'Filters transactions according to the name of the channel.',
+					type: 'string'
+				},
+				{
+					name: 'from/to',
+					description: 'Returns records based on the beginning and ending transaction dates specified. Both parameters are optional. Using only one parameter allows filtering in one direction. Example: from=2019-09-01T00:00:00&to=2019-09-10T00:00:00',
+					type: 'timestamp'
+				},
+				{
+					name: 'createdsince/updatedsince',
+					description: 'Filters transactions created or updated since a specified date/time.',
+					type: 'timestamp'
+				}
+			]
+		},
 		sosObject: 'Estimate',
 		sosApiUrl: 'https://developer.sosinventory.com/apidoc/Estimate',
 		sosHelpUrl: 'https://help.sosinventory.com/v8-estimates-and-the-estimates-list',
@@ -1873,99 +1947,207 @@ exports.tables = [
 	},
 	{
 		name: 'invoices',
+		description: 'An invoice is a bill to a customer requesting that they pay you a certain amount of money by a certain date.',
+		primary: true,
+		api: {
+			endpoint: '/api/v2/invoice',
+			results: [
+				{
+					name: 'count',
+					description: 'The number of results returned in this query.',
+					type: 'integer'
+				},
+				{
+					name: 'totalCount',
+					description: 'The total number of records that match the filters of this query.',
+					type: 'integer'
+				},
+				{
+					name: 'data',
+					description: 'An array of invoice objects.',
+					type: 'array'
+				},
+				{
+					name: 'status',
+					description: 'The status of the query. Will be “ok” if successful, otherwise this matches with the message field to indicate why the call failed.',
+					type: 'string'
+				},
+				{
+					name: 'message',
+					description: 'A descriptive message indicating why the query was unsuccessful.',
+					type: 'string'
+				}
+			],
+			arguments: [
+				{
+					name: 'start',
+					description: 'A cursor used in pagination. This is the row number of the full set of results. The API limits results to a max of 200 results per call. If you want to retrieve the next set of results you can use this parameter to retrive the next set of results. For example if you are retrieving 200 results at a time, you can set start=201 to retrieve the next page of results.',
+					type: 'integer'
+				},
+				{
+					name: 'maxresults',
+					description: 'The maximum number of results you want to return. The default is 200, the maximum value allowed.',
+					type: 'integer'
+				},
+				{
+					name: 'status',
+					description: 'Filters the results by void status.',
+					type: 'string'
+				},
+				{
+					name: 'summary',
+					description: 'If this parameter is present (the value doesn\'t matter, and doesn\'t need to be specified), only the summary attributes of the estimate will be returned.',
+					type: 'string'
+				},
+				{
+					name: 'query',
+					description: 'This parameter will filter the results by matches of the string on the following fields: number, comment, customerPO, or customer name.',
+					type: 'string'
+				},
+				{
+					name: 'archived',
+					description: 'A "yes" returns archived records only; a "no" returns only those that have not been archived.',
+					type: 'string'
+				},
+				{
+					name: 'from/to',
+					description: 'Returns records based on the beginning and ending transaction dates specified. Both parameters are optional. Using only one parameter allows filtering in one direction. Example: from=2019-09-01T00:00:00&to=2019-09-10T00:00:00',
+					type: 'timestamp'
+				},
+				{
+					name: 'createdsince/updatedsince',
+					description: 'Filters transactions created or updated since a specified date/time.',
+					type: 'timestamp'
+				}
+			]
+		},
+		sosObject: 'Invoice',
+		sosApiUrl: 'https://developer.sosinventory.com/apidoc/Invoice',
+		sosHelpUrl: 'https://help.sosinventory.com/v8-invoices-and-the-invoices-list',
 		fields: [
 			{
 				name: 'id',
+				description: 'Unique identifier for this record. ID field is ignored on create requests.',
 				type: 'integer',
 				nulls: false,
 				unique: true
 			},
 			{
 				name: 'starred',
+				description: 'Indicates if this transaction has been starred. A value of 0 = no star; 1 or 1-3 = starred. Star colors depend on application configuration. This could be one color of star or three colors of stars. See Company Settings in the user guide for more details.',
 				type: 'integer'
 			},
 			{
 				name: 'syncToken',
+				description: 'Indicates the current version of this record. If you receive an error when updating a record, it is because your syncToken is for an older version of the record than that which is currently in the database. Please GET the latest version prior to updating.',
 				type: 'integer'
 			},
 			{
 				name: 'number',
+				description: 'The order number for this record. If you wish to use the automatic numbering capability on creation of a invoice, pass the string “auto”.',
 				type: 'string'
 			},
 			{
 				name: 'date',
-				type: 'string'
+				description: 'Transaction date.',
+				type: 'timestamp'
 			},
 			{
 				name: 'customer',
-				type: 'string'
+				description: 'Customer for this transaction.',
+				type: 'reference',
+				reference: { field: 'customerId', property: 'id', sourceTable: 'customers', sourceField: 'id' }
 			},
 			{
 				name: 'billing',
-				type: 'string'
+				description: 'Billing address.',
+				type: 'object',
+				objectType: sosObjects.transactionAddress
 			},
 			{
 				name: 'shipping',
-				type: 'string'
+				description: 'Shipping address.',
+				type: 'object',
+				objectType: sosObjects.transactionAddress
 			},
 			{
 				name: 'terms',
-				type: 'string'
+				description: 'Payment terms of this invoice',
+				type: 'reference',
+				reference: { field: 'termsId', property: 'id', sourceTable: 'terms', sourceField: 'id' }
 			},
 			{
 				name: 'dueDate',
-				type: 'string'
+				description: 'Date that payment is due for this invoice',
+				type: 'timestamp'
 			},
 			{
 				name: 'salesRep',
-				type: 'string'
+				description: 'Sales representative for this transaction.',
+				type: 'reference',
+				reference: { field: 'salesRepId', property: 'id', sourceTable: 'salesReps', sourceField: 'id' }
 			},
 			{
 				name: 'channel',
-				type: 'string'
+				description: 'Channel (e.g., Catalog, Retail Store) for this transaction.',
+				type: 'reference',
+				reference: { field: 'channelId', property: 'id', sourceTable: 'channels', sourceField: 'id' }
 			},
 			{
 				name: 'department',
-				type: 'string'
+				description: 'Department for this transaction.',
+				type: 'reference',
+				reference: { field: 'departmentId', property: 'id', sourceTable: 'departments', sourceField: 'id' }
 			},
 			{
 				name: 'taxCode',
-				type: 'string'
+				description: 'Tax code for transaction.',
+				type: 'reference',
+				reference: { field: 'taxCodeId', property: 'id', sourceTable: 'taxCodes', sourceField: 'id' }
 			},
 			{
 				name: 'currency',
-				type: 'string'
+				description: 'Currency used for transaction, if multicurrency is enabled.',
+				type: 'reference'
 			},
 			{
 				name: 'linkedTransaction',
-				type: 'string'
+				description: 'Reference to the transaction this invoice is linked to, such as a sales order or fulfillment. Null when the invoice is standalone.',
+				type: 'reference'
 			},
 			{
 				name: 'linkedPayments',
-				type: 'string'
+				description: 'Array of payment records applied to this invoice. Contains only high‑level linkage information, not full payment objects.',
+				type: 'array'
 			},
 			{
 				name: 'sosPaymentLink',
+				description: 'URL generated by SOS that allows the customer to pay this invoice online, when online payments are enabled.',
 				type: 'string'
 			},
 			{
 				name: 'transactionLocationQuickBooks',
+				description: 'The QuickBooks location associated with this invoice, if location tracking is enabled in QuickBooks.',
 				type: 'string'
 			},
 			{
 				name: 'exchangeRate',
+				description: 'The exchange rate used for this transaction, if multicurrency is enabled.',
 				type: 'decimal'
 			},
 			{
 				name: 'customerMessage',
+				description: 'Customer message field.',
 				type: 'string'
 			},
 			{
 				name: 'comment',
+				description: 'This comment is not visible to the customer on SOS-generated PDFs and emails, but the comment does appear on customer statements generated in QuickBooks.',
 				type: 'string'
 			},
 			{
 				name: 'customerNotes',
+				description: 'Field for internal notes about customer.',
 				type: 'string'
 			},
 			{
@@ -1976,127 +2158,301 @@ exports.tables = [
 			},
 			{
 				name: 'customerPO',
+				description: 'Customer\'s purchase order number.',
 				type: 'string'
 			},
 			{
 				name: 'depositAmount',
+				description: 'Deposit amount field.',
 				type: 'decimal'
 			},
 			{
 				name: 'subTotal',
-				type: 'decimal'
+				description: 'Subtotal for transaction.',
+				type: 'decimal',
+				readOnly: true
 			},
 			{
 				name: 'discountPercent',
+				description: 'Discount percentage field.',
 				type: 'decimal'
 			},
 			{
 				name: 'discountAmount',
+				description: 'Deposit amount field.',
 				type: 'decimal'
 			},
 			{
 				name: 'taxPercent',
+				description: 'Tax percentage field.',
 				type: 'decimal'
 			},
 			{
 				name: 'taxAmount',
+				description: 'Tax amount field.',
 				type: 'decimal'
 			},
 			{
 				name: 'shippingAmount',
-				type: 'decimal'
+				description: 'Shipping amount field.',
+				type: 'decimal',
+				readOnly: true
 			},
 			{
 				name: 'balance',
+				description: 'The remaining unpaid balance for this invoice after all applied payments and credits.',
 				type: 'decimal'
 			},
 			{
 				name: 'status',
+				description: 'The current status of the invoice (e.g., Open, Paid, Partially Paid, Voided). Values vary based on SOS configuration.',
 				type: 'string'
 			},
 			{
 				name: 'trackingNumber',
-				type: 'string'
+				description: 'Shipping carrier\'s tracking number.',
+				type: 'string',
+				readOnly: true
 			},
 			{
 				name: 'shipDate',
-				type: 'string'
+				description: 'Shipping amount field.',
+				type: 'timestamp',
+				readOnly: true
 			},
 			{
 				name: 'shippingMethod',
-				type: 'string'
+				description: 'Shipping method for this return.',
+				type: 'reference',
+				reference: { field: 'shipMethodId', property: 'id', sourceTable: 'shipMethods', sourceField: 'id' },
+				readOnly: true
 			},
 			{
 				name: 'total',
+				description: 'Transaction total.',
 				type: 'decimal'
 			},
 			{
 				name: 'discountTaxable',
-				type: 'integer'
+				description: 'True if discount is taxable, false if not.',
+				type: 'boolean'
 			},
 			{
 				name: 'shippingTaxable',
-				type: 'integer'
+				description: 'True if shipping is taxable, false if not.',
+				type: 'boolean'
 			},
 			{
 				name: 'voided',
-				type: 'decimal'
+				description: 'True if the invoice has been voided; false otherwise.',
+				type: 'boolean'
 			},
 			{
 				name: 'archived',
-				type: 'integer'
+				description: 'True if item is archived, false if not.',
+				type: 'boolean',
+				readOnly: true
 			},
 			{
 				name: 'summaryOnly',
-				type: 'integer'
+				description: 'True if the summary parameter was set when this record was retrieved. False if not.',
+				type: 'boolean'
 			},
 			{
 				name: 'hasSignature',
-				type: 'integer'
+				description: 'Reserved for future use.',
+				type: 'boolean'
 			},
 			{
 				name: 'forceSave',
-				type: 'integer'
+				description: 'Internal flag used by SOS to bypass certain validation rules during updates. Typically not required for standard API usage.',
+				type: 'boolean'
 			},
 			{
 				name: 'syncMessage',
-				type: 'string'
+				description: 'The sync error message if the last sync attempt failed with Quickbooks. This will be empty if synchronization is successful.',
+				type: 'string',
+				readOnly: true
 			},
 			{
 				name: 'lastSync',
-				type: 'string'
+				description: 'The last successful sync time (GMT) for this invoice, if syncronizing with Quickbooks.',
+				type: 'timestamp',
+				readOnly: true
 			},
 			{
 				name: 'lines',
-				type: 'string'
-			},
-			{
-				name: 'customerId',
-				type: 'integer'
-			},
-			{
-				name: 'termsId',
-				type: 'integer'
-			},
-			{
-				name: 'salesRepId',
-				type: 'integer'
-			},
-			{
-				name: 'channelId',
-				type: 'integer'
-			},
-			{
-				name: 'departmentId',
-				type: 'integer'
-			},
-			{
-				name: 'taxCodeId',
-				type: 'integer'
-			},
-			{
-				name: 'shipMethodId',
-				type: 'integer'
+				description: 'The lines for the invoice. See object structure below.',
+				type: 'array',
+				sidecar: {
+					table: 'invoiceItems',
+					fields: [
+						{
+							name: 'id',
+							description: 'The unique identifier for this estimate line item. ID field is ignored on create requests.',
+							type: 'integer',
+							source: 'object',
+							property: 'id'
+						},
+						{
+							name: 'linenumber',
+							description: 'The line number for this line on the invoice transaction.',
+							type: 'integer',
+							source: 'object',
+							property: 'linenumber'
+						},
+						{
+							name: 'item',
+							description: 'The item this line represents.',
+							type: 'reference',
+							reference: { field: 'itemId', property: 'id', sourceTable: 'items', sourceField: 'id' },
+							source: 'object',
+							property: 'item'
+						},
+						{
+							name: 'class',
+							description: 'The class for this line.',
+							type: 'reference',
+							reference: { field: 'classId', property: 'id', sourceTable: 'classes', sourceField: 'id' },
+							source: 'object',
+							property: 'class'
+						},
+						{
+							name: 'job',
+							description: 'The job for this line, if enabled.',
+							type: 'reference',
+							reference: { field: 'jobId', property: 'id', sourceTable: 'jobs', sourceField: 'id' },
+							source: 'object',
+							property: 'job'
+						},
+						{
+							name: 'workcenter',
+							description: 'The related work center for the job.',
+							type: 'reference',
+							reference: { field: 'workCenterId', property: 'id', sourceTable: 'workCenters', sourceField: 'id' },
+							source: 'object',
+							property: 'workcenter'
+						},
+						{
+							name: 'tax',
+							description: 'The tax information for this line, if enabled.',
+							type: 'object',
+							source: 'object',
+							property: 'tax'
+						},
+						{
+							name: 'linkedTransaction',
+							description: 'The transaction linked to this line.',
+							type: 'object',
+							objectType: sosObjects.transaction,
+							source: 'object',
+							property: 'linkedTransaction'
+						},
+						{
+							name: 'description',
+							description: 'The item description.',
+							type: 'string',
+							source: 'object',
+							property: 'description'
+						},
+						{
+							name: 'quantity',
+							description: 'The quantity for this line.',
+							type: 'decimal',
+							source: 'object',
+							property: 'quantity'
+						},
+						{
+							name: 'weight',
+							description: 'The weight of this line.',
+							type: 'decimal',
+							source: 'object',
+							property: 'weight',
+							readOnly: true
+						},
+						{
+							name: 'volume',
+							description: 'The volume of this line.',
+							type: 'decimal',
+							source: 'object',
+							property: 'volume',
+							readOnly: true
+						},
+						{
+							name: 'weightunit',
+							description: 'The unit for the item\'s weight value.',
+							type: 'string',
+							source: 'object',
+							property: 'weightunit',
+							readOnly: true
+						},
+						{
+							name: 'volumeunit',
+							description: 'The unit for the volume value.',
+							type: 'string',
+							source: 'object',
+							property: 'volumeunit',
+							readOnly: true
+						},
+						{
+							name: 'unitprice',
+							description: 'The unit price for this item. Must be above the item’s minimum price, if set.',
+							type: 'decimal',
+							source: 'object',
+							property: 'unitprice',
+							readOnly: true
+						},
+						{
+							name: 'amount',
+							description: 'The sales amount for this line item. The amount must equal the quantity multiplied by the unit price.',
+							type: 'decimal',
+							source: 'object',
+							property: 'amount',
+							readOnly: true
+						},
+						{
+							name: 'cost',
+							description: 'The cost for this line.',
+							type: 'decimal',
+							source: 'object',
+							property: 'cost',
+							readOnly: true
+						},
+						{
+							name: 'margin',
+							description: 'The margin for this line.',
+							type: 'decimal',
+							source: 'object',
+							property: 'margin',
+							readOnly: true
+						},
+						{
+							name: 'listprice',
+							description: 'The list price for this item.',
+							type: 'decimal',
+							source: 'object',
+							property: 'listprice',
+							readOnly: true
+						},
+						{
+							name: 'percentdiscount',
+							description: 'The discount percentage applied to this line.',
+							type: 'decimal',
+							source: 'object',
+							property: 'percentdiscount',
+							readOnly: true
+						},
+						{
+							name: 'uom',
+							description: 'The unit of measure for this line.',
+							type: 'reference',
+							reference: { field: 'unitsOfMeasureId', property: 'id', sourceTable: 'unitsOfMeasure', sourceField: 'id' },
+							source: 'object',
+							property: 'uom'
+						}
+					],
+					primaryKey: ['id']
+				}
 			}
 		],
 		primaryKey: ['id']

@@ -49,11 +49,30 @@ async function downloadTable(params, engine, table) {
 
 	while (true) {
 		const result = await sosApi(
-			`https://api.sosinventory.com/api/v2/${table.api}?start=${offset}&maxresults=200`,
-			params.sosAuthorization,
-			retries
+        `https://api.sosinventory.com${table.api.endpoint}?start=${offset}&maxresults=200`,
+        params.sosAuthorization,
+        retries
 		)
 
+		// 1. SOS returned non-ok status
+		if (result.status !== 'ok') {
+			await engine.rollback()
+			return { ok: false, message: result.message || 'SOS API returned non-ok status' }
+		}
+
+		// 2. Data must be an array
+		if (!Array.isArray(result.data)) {
+			await engine.rollback()
+			return { ok: false, message: 'SOS API returned invalid data array' }
+		}
+
+		// 3. Pagination fields must exist
+		if (typeof result.count !== 'number' || typeof result.totalCount !== 'number') {
+			await engine.rollback()
+			return { ok: false, message: 'SOS API returned invalid pagination fields' }
+		}
+
+		// 4. Insert rows
 		for (const record of result.data) {
 			delete record.keys
 			delete record.values
@@ -61,7 +80,7 @@ async function downloadTable(params, engine, table) {
 			const irResult = await insertRow(engine, table, record)
 			if (!irResult.ok) {
 				await engine.rollback()
-				return irResult
+				return { ok: false, message: irResult }
 			}
 		}
 
@@ -181,7 +200,7 @@ async function downloadSOS(params) {
 		const result = await downloadTable(params, engine, table)
 		if (!result.ok) {
 			if (engine.close) await engine.close()
-			return result
+			return { ok: false, result, message: `Failed on downloadTable for ${table.name}`, downloadMessage: result.message }
 		}
 	}
 
