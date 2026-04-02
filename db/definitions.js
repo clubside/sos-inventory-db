@@ -4381,7 +4381,7 @@ exports.tables = [
 		name: 'processes',
 		sosObject: 'Process',
 		description: 'Processes in SOS Inventory can have an unlimited number of inputs and outputs. This gives you the flexibility to handle not only simple manufacturing (multiple inputs into one output) but also disassembly (where one input produces many outputs) and processes with by-products (multiple inputs into multiple outputs).',
-		primary: true,
+		primary: false,
 		api: {
 			query: {
 				endpoint: '/api/v2/process',
@@ -4928,96 +4928,204 @@ exports.tables = [
 	},
 	{
 		name: 'purchaseOrders',
+		sosObject: 'Purchase Order',
+		description: 'A purchase order is a document requesting that a vendor provide a good or service in exchange for payment.',
+		primary: true,
+		api: {
+			query: {
+				endpoint: '/api/v2/purchaseorder',
+				description: 'Returns a list of purchase order objects.',
+				method: 'GET',
+				results: [
+					{
+						name: 'count',
+						description: 'The number of results returned in this query.',
+						type: 'integer'
+					},
+					{
+						name: 'totalCount',
+						description: 'The total number of records that match the filters of this query.',
+						type: 'integer'
+					},
+					{
+						name: 'data',
+						description: 'An array of invoice objects.',
+						type: 'array'
+					},
+					{
+						name: 'status',
+						description: 'The status of the query. Will be “ok” if successful, otherwise this matches with the message field to indicate why the call failed.',
+						type: 'string'
+					},
+					{
+						name: 'message',
+						description: 'A descriptive message indicating why the query was unsuccessful.',
+						type: 'string'
+					}
+				],
+				arguments: [
+					{
+						name: 'start',
+						description: 'A cursor used in pagination. This is the row number of the full set of results. The API limits results to a max of 200 results per call. If you want to retrieve the next set of results you can use this parameter to retrive the next set of results. For example if you are retrieving 200 results at a time, you can set start=201 to retrieve the next page of results.',
+						type: 'integer'
+					},
+					{
+						name: 'maxresults',
+						description: 'The maximum number of results you want to return. The default is 200, the maximum value allowed.',
+						type: 'integer'
+					},
+					{
+						name: 'status',
+						description: 'Filters results by whether transaction is open or closed.',
+						type: 'string'
+					},
+					{
+						name: 'query',
+						description: 'This parameter will filter the results by matches of the string on the following fields: number, comment, vendor name, or customer name.',
+						type: 'string'
+					},
+					{
+						name: 'archived',
+						description: 'A "yes" returns archived records only; a "no" returns only those that have not been archived.',
+						type: 'string'
+					},
+					{
+						name: 'from/to',
+						description: 'Returns records based on the beginning and ending transaction dates specified. Both parameters are optional. Using only one parameter allows filtering in one direction. Example: from=2019-09-01T00:00:00&to=2019-09-10T00:00:00',
+						type: 'timestamp'
+					},
+					{
+						name: 'createdsince/updatedsince',
+						description: 'Filters transactions created or updated since a specified date/time.',
+						type: 'timestamp'
+					}
+				]
+			}
+		},
+		sosApiUrl: 'https://developer.sosinventory.com/apidoc/PurchaseOrder',
+		sosHelpUrl: 'https://help.sosinventory.com/v8-purchase-order-field-descriptions',
 		fields: [
 			{
 				name: 'id',
+				description: 'Unique identifier for this record. ID field is ignored on create requests.',
 				type: 'integer',
 				nulls: false,
 				unique: true
 			},
 			{
 				name: 'starred',
+				description: 'Indicates if this item receipt has been starred. A value of 0 = no star; 1 or 1-3 = starred. Star colors depend on application configuration. This could be one color of star or three colors of stars. See Company Settings in the user guide for more details.',
 				type: 'integer'
 			},
 			{
 				name: 'syncToken',
+				description: 'Indicates the current version of this record. If you receive an error when updating a record, it is because your syncToken is for an older version of the record than that which is currently in the database. Please GET the latest version prior to updating.',
 				type: 'integer'
 			},
 			{
 				name: 'number',
+				description: 'The order number for this record. If you wish to use the automatic numbering capability on creation of a item receipt, pass the string “auto”.',
 				type: 'string'
 			},
 			{
 				name: 'date',
-				type: 'string'
+				description: 'Transaction date.',
+				type: 'timestamp'
 			},
 			{
 				name: 'vendor',
-				type: 'string'
+				description: 'Vendor from which these items were received.',
+				type: 'reference',
+				reference: { field: 'vendorId', property: 'id', sourceTable: 'vendors', sourceField: 'id' }
 			},
 			{
 				name: 'location',
-				type: 'string'
+				description: 'Location where these items were stored.',
+				type: 'reference',
+				reference: { field: 'locationId', property: 'id', sourceTable: 'locations', sourceField: 'id' }
 			},
 			{
 				name: 'billing',
-				type: 'string'
+				description: 'The vendor\'s billing address.',
+				type: 'object',
+				objectType: sosObjects.transactionAddress
 			},
 			{
 				name: 'shipping',
-				type: 'string'
+				description: 'The address to which the items should be shipped.',
+				type: 'object',
+				objectType: sosObjects.transactionAddress
 			},
 			{
 				name: 'terms',
-				type: 'string'
+				description: 'Payment terms.',
+				type: 'reference',
+				reference: { field: 'termsId', property: 'id', sourceTable: 'terms', sourceField: 'id' }
 			},
 			{
 				name: 'department',
-				type: 'string'
+				description: 'Department for this transaction.',
+				type: 'reference',
+				reference: { field: 'departmentId', property: 'id', sourceTable: 'departments', sourceField: 'id' }
 			},
 			{
 				name: 'assignedToUser',
-				type: 'string'
+				description: 'User to whom this transaction has been assigned.',
+				type: 'reference',
+				reference: { field: 'assignedToUserId', property: 'id', sourceTable: 'users', sourceField: 'id' }
 			},
 			{
 				name: 'currency',
-				type: 'string'
+				description: 'Currency used for transaction, if multicurrency is enabled.',
+				type: 'reference'
 			},
 			{
 				name: 'taxCode',
-				type: 'string'
+				description: 'Tax code for transaction.',
+				type: 'reference',
+				reference: { field: 'taxCodeId', property: 'id', sourceTable: 'taxCodes', sourceField: 'id' }
 			},
 			{
 				name: 'shippingMethod',
-				type: 'string'
+				description: 'Shipping method for transaction.',
+				type: 'reference',
+				reference: { field: 'shipMethodId', property: 'id', sourceTable: 'shipMethods', sourceField: 'id' }
 			},
 			{
 				name: 'linkedTransaction',
-				type: 'string'
+				description: 'The transaction linked to this purchase order. Must be an estimate transaction.',
+				type: 'object',
+				objectType: sosObjects.transaction
 			},
 			{
 				name: 'exchangeRate',
+				description: 'The exchange rate used for this transaction, if multicurrency is enabled.',
 				type: 'decimal'
 			},
 			{
 				name: 'vendorMessage',
+				description: 'Vendor message field.',
 				type: 'string'
 			},
 			{
 				name: 'comment',
+				description: 'The company’s internal comment about this transaction. This comment is not visible to the vendor.',
 				type: 'string'
 			},
 			{
 				name: 'vendorNotes',
+				description: 'Vendor notes field. For in-house use.',
 				type: 'string'
 			},
 			{
 				name: 'expectedDate',
-				type: 'string'
+				description: 'Anticipated date for receiving these items.',
+				type: 'timestamp'
 			},
 			{
 				name: 'expectedShip',
-				type: 'string'
+				description: 'Anticipated items’ ship date from vendor.',
+				type: 'timestamp'
 			},
 			{
 				name: 'customFields',
@@ -5027,91 +5135,277 @@ exports.tables = [
 			},
 			{
 				name: 'depositAmount',
+				description: 'Deposit amount field.',
 				type: 'decimal'
 			},
 			{
 				name: 'subTotal',
-				type: 'decimal'
+				description: 'Subtotal for transaction.',
+				type: 'decimal',
+				readOnly: true
 			},
 			{
 				name: 'taxAmount',
+				description: 'Tax on this order.',
 				type: 'decimal'
 			},
 			{
 				name: 'total',
-				type: 'decimal'
+				description: 'Transaction total.',
+				type: 'decimal',
+				readOnly: true
 			},
 			{
 				name: 'dropShip',
-				type: 'integer'
+				description: 'True if order is to be drop shipped to a customer, false if not.',
+				type: 'boolean'
 			},
 			{
 				name: 'blanketPO',
-				type: 'integer'
+				description: 'True if transaction is a blanket purchase order, false if not.',
+				type: 'boolean'
 			},
 			{
 				name: 'contractManufacturing',
-				type: 'integer'
+				description: 'True if order is for contract manufacturing, false if not.',
+				type: 'boolean'
 			},
 			{
 				name: 'confirmed',
-				type: 'integer'
+				description: 'True if purchase order has been confirmed with the vendor, false if not.',
+				type: 'boolean'
 			},
 			{
 				name: 'closed',
-				type: 'integer'
+				description: 'True if order is closed, false if not.',
+				type: 'boolean'
 			},
 			{
 				name: 'archived',
-				type: 'integer'
+				description: 'True if item is archived, false if not.',
+				type: 'boolean',
+				readOnly: true
 			},
 			{
 				name: 'pendingApproval',
-				type: 'integer'
+				description: 'True if purchase order is awaiting approval, false if not.',
+				type: 'boolean',
+				readOnly: true
 			},
 			{
 				name: 'summaryOnly',
-				type: 'integer'
+				description: 'Indicates if the summary parameter was set when retrieving back this record.',
+				type: 'boolean',
+				readOnly: true
 			},
 			{
 				name: 'hasSignature',
-				type: 'integer'
+				description: 'Reserved for future use.',
+				type: 'boolean',
+				readOnly: true
 			},
 			{
 				name: 'lastSync',
-				type: 'string'
+				description: 'The last successful sync time (GMT) for this purchase order, if syncronizing with Quickbooks.',
+				type: 'timestamp'
 			},
 			{
 				name: 'syncMessage',
+				description: 'The sync error message if the last sync attempt failed with Quickbooks. This will be empty if synchronization is successful.',
 				type: 'string'
 			},
 			{
 				name: 'lines',
-				type: 'string'
-			},
-			{
-				name: 'vendorId',
-				type: 'integer'
-			},
-			{
-				name: 'locationId',
-				type: 'integer'
-			},
-			{
-				name: 'termsId',
-				type: 'integer'
-			},
-			{
-				name: 'departmentId',
-				type: 'integer'
-			},
-			{
-				name: 'taxCodeId',
-				type: 'integer'
-			},
-			{
-				name: 'shipMethodId',
-				type: 'integer'
+				description: 'The lines for the purchase order.',
+				type: 'array',
+				sidecar: {
+					table: 'purchaseOrderItems',
+					fields: [
+						{
+							name: 'id',
+							description: 'The unique identifier for this purchase order line item. ID field is ignored on create requests.',
+							type: 'integer',
+							source: 'object',
+							property: 'id'
+						},
+						{
+							name: 'linenumber',
+							description: 'The line number for this line on the purchase order transaction.',
+							type: 'integer',
+							source: 'object',
+							property: 'linenumber'
+						},
+						{
+							name: 'item',
+							description: 'The item this line represents.',
+							type: 'reference',
+							reference: { field: 'itemId', property: 'id', sourceTable: 'items', sourceField: 'id' },
+							source: 'object',
+							property: 'item'
+						},
+						{
+							name: 'vendorPartNumber',
+							description: 'The item this line represents.',
+							type: 'string',
+							source: 'object',
+							property: 'vendorPartNumber'
+						},
+						{
+							name: 'class',
+							description: 'The class for this line.',
+							type: 'reference',
+							reference: { field: 'classId', property: 'id', sourceTable: 'classes', sourceField: 'id' },
+							source: 'object',
+							property: 'class'
+						},
+						{
+							name: 'job',
+							description: 'The job for this line, if enabled.',
+							type: 'reference',
+							reference: { field: 'jobId', property: 'id', sourceTable: 'jobs', sourceField: 'id' },
+							source: 'object',
+							property: 'job'
+						},
+						{
+							name: 'workcenter',
+							description: 'The related work center for the job.',
+							type: 'reference',
+							reference: { field: 'workCenterId', property: 'id', sourceTable: 'workCenters', sourceField: 'id' },
+							source: 'object',
+							property: 'workcenter'
+						},
+						{
+							name: 'customer',
+							description: 'The customer this line item is targeted for, if any.',
+							type: 'reference',
+							reference: { field: 'customerId', property: 'id', sourceTable: 'customers', sourceField: 'id' },
+							source: 'object',
+							property: 'customer'
+						},
+						{
+							name: 'tax',
+							description: 'The tax information for this line, if enabled.',
+							type: 'object',
+							objectTypes: sosObjects.taxInformation,
+							source: 'object',
+							property: 'tax'
+						},
+						{
+							name: 'linkedTransaction',
+							description: 'The transaction linked to this line.',
+							type: 'object',
+							objectTypes: sosObjects.transaction,
+							source: 'object',
+							property: 'linkedTransaction'
+						},
+						{
+							name: 'description',
+							description: 'The item description.',
+							type: 'string',
+							source: 'object',
+							property: 'description'
+						},
+						{
+							name: 'quantity',
+							description: 'The quantity for this line.',
+							type: 'decimal',
+							source: 'object',
+							property: 'quantity'
+						},
+						{
+							name: 'weight',
+							description: 'The weight of this line.',
+							type: 'decimal',
+							source: 'object',
+							property: 'weight',
+							readOnly: true
+						},
+						{
+							name: 'volume',
+							description: 'The volume of this line.',
+							type: 'decimal',
+							source: 'object',
+							property: 'volume',
+							readOnly: true
+						},
+						{
+							name: 'weightunit',
+							description: 'The unit for the item\'s weight value.',
+							type: 'string',
+							source: 'object',
+							property: 'weightunit',
+							readOnly: true
+						},
+						{
+							name: 'volumeunit',
+							description: 'The unit for the volume value.',
+							type: 'string',
+							source: 'object',
+							property: 'volumeunit',
+							readOnly: true
+						},
+						{
+							name: 'unitPrice',
+							description: 'The per-unit purchase cost for the item.',
+							type: 'decimal',
+							source: 'object',
+							property: 'unitPrice'
+						},
+						{
+							name: 'amount',
+							description: 'The purchase amount for this line item. The amount must equal the quantity multiplied by the unit',
+							type: 'decimal',
+							source: 'object',
+							property: 'amount'
+						},
+						{
+							name: 'received',
+							description: 'The quantity of this line item that was received.',
+							type: 'decimal',
+							source: 'object',
+							property: 'received'
+						},
+						{
+							name: 'uom',
+							description: 'The unit of measure for this line.',
+							type: 'reference',
+							reference: { field: 'unitsOfMeasureId', property: 'id', sourceTable: 'unitsOfMeasure', sourceField: 'id' },
+							source: 'object',
+							property: 'uom'
+						},
+						{
+							name: 'bin',
+							description: 'The bin used for this item process.',
+							type: 'reference',
+							reference: { field: 'binId', property: 'id', sourceTable: 'bins', sourceField: 'id' },
+							source: 'object',
+							property: 'bin'
+						},
+						{
+							name: 'lot',
+							description: 'The lot used for this item process.',
+							type: 'reference',
+							reference: { field: 'lotId', property: 'id', sourceTable: 'lots', sourceField: 'id' },
+							source: 'object',
+							property: 'lot'
+						},
+						{
+							name: 'lotExpiration',
+							description: 'Unused',
+							type: 'timestamp',
+							source: 'object',
+							property: 'lotExpiration'
+						},
+						{
+							name: 'serials',
+							description: 'The serial numbers used for this item process.',
+							type: 'array',
+							source: 'object',
+							property: 'serials'
+						}
+					],
+					primaryKey: ['id']
+				}
 			}
 		],
 		primaryKey: ['id']
