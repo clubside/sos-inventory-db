@@ -205,8 +205,6 @@ const sosObjects = {
  * @property {Boolean} [reference] - whether the table should be grouped as part of SOS Inventory's Reference objects
  * @property {Boolean} [support] - whether the table should be grouped as part of SOS Inventory's Support objects
  * @property {SOSAPI} [api] - SOS Inventory API definition
- * @property {Boolean} [supportsFromTo] - whether the API supports from and to parameters
- * @property {Boolean} [supportsCreatedSinceUpdatedSince] - whether the API supports createdsince and updatedsince parameters
  * @property {String} [sosApiUrl] - link to SOS Inventory API developer page
  * @property {String} [sosHelpUrl] - link to SOS Inventory help page
  * @property {SOSField[]} fields - field definitions for the table
@@ -216,12 +214,55 @@ const sosObjects = {
 exports.tables = [
 	{
 		name: 'accounts',
+		sosObject: 'Account',
 		description: 'This represents an account used for posting to an accounting system.',
 		reference: true,
-		api: 'account',
-		supportsFromTo: false,
-		supportsCreatedSinceUpdatedSince: false,
-		sosObject: 'Account',
+		api: {
+			query: {
+				endpoint: '/api/v2/account',
+				description: 'Returns a list of account objects.',
+				method: 'GET',
+				results: [
+					{
+						name: 'count',
+						description: 'The number of results returned in this query.',
+						type: 'integer'
+					},
+					{
+						name: 'totalCount',
+						description: 'The total number of records that match the filters of this query.',
+						type: 'integer'
+					},
+					{
+						name: 'data',
+						description: 'An array of invoice objects.',
+						type: 'array'
+					},
+					{
+						name: 'status',
+						description: 'The status of the query. Will be “ok” if successful, otherwise this matches with the message field to indicate why the call failed.',
+						type: 'string'
+					},
+					{
+						name: 'message',
+						description: 'A descriptive message indicating why the query was unsuccessful.',
+						type: 'string'
+					}
+				],
+				arguments: [
+					{
+						name: 'start',
+						description: 'A cursor used in pagination. This is the row number of the full set of results. The API limits results to a max of 200 results per call. If you want to retrieve the next set of results you can use this parameter to retrive the next set of results. For example if you are retrieving 200 results at a time, you can set start=201 to retrieve the next page of results.',
+						type: 'integer'
+					},
+					{
+						name: 'maxresults',
+						description: 'The maximum number of results you want to return. The default is 200, the maximum value allowed.',
+						type: 'integer'
+					}
+				]
+			}
+		},
 		sosApiUrl: 'https://developer.sosinventory.com/apidoc/references#account',
 		sosHelpUrl: null,
 		fields: [
@@ -287,12 +328,90 @@ exports.tables = [
 	},
 	{
 		name: 'adjustments',
-		description: 'Inventory adjustments allow you to modify the quantity and/or cost basis of inventory on hand. You should use inventory adjustments sparingly, as most often inventory will be added or removed through item receipts and shipments.',
-		primary: false,
-		api: 'adjustment',
-		supportsFromTo: true,
-		supportsCreatedSinceUpdatedSince: true,
 		sosObject: 'Adjustment',
+		description: 'Inventory adjustments allow you to modify the quantity and/or cost basis of inventory on hand. You should use inventory adjustments sparingly, as most often inventory will be added or removed through item receipts and shipments.',
+		primary: true,
+		api: {
+			query: {
+				endpoint: '/api/v2/adjustment',
+				description: 'Returns a list of adjustment objects.',
+				method: 'GET',
+				results: [
+					{
+						name: 'count',
+						description: 'The number of results returned in this query.',
+						type: 'integer'
+					},
+					{
+						name: 'totalCount',
+						description: 'The total number of records that match the filters of this query.',
+						type: 'integer'
+					},
+					{
+						name: 'data',
+						description: 'An array of invoice objects.',
+						type: 'array'
+					},
+					{
+						name: 'status',
+						description: 'The status of the query. Will be “ok” if successful, otherwise this matches with the message field to indicate why the call failed.',
+						type: 'string'
+					},
+					{
+						name: 'message',
+						description: 'A descriptive message indicating why the query was unsuccessful.',
+						type: 'string'
+					}
+				],
+				arguments: [
+					{
+						name: 'start',
+						description: 'A cursor used in pagination. This is the row number of the full set of results. The API limits results to a max of 200 results per call. If you want to retrieve the next set of results you can use this parameter to retrive the next set of results. For example if you are retrieving 200 results at a time, you can set start=201 to retrieve the next page of results.',
+						type: 'integer'
+					},
+					{
+						name: 'maxresults',
+						description: 'The maximum number of results you want to return. The default is 200, the maximum value allowed.',
+						type: 'integer'
+					},
+					{
+						name: 'summary',
+						description: 'If this parameter is present (the value doesn\'t matter, and doesn\'t need to be specified), only the summary attributes of the estimate will be returned.',
+						type: 'string'
+					},
+					{
+						name: 'query',
+						description: 'This parameter will filter the results by matches of the string on the following fields: number, id, comment, or location name.',
+						type: 'string'
+					},
+					{
+						name: 'archived',
+						description: 'A "yes" returns archived records only; a "no" returns only those that have not been archived.',
+						type: 'string'
+					},
+					{
+						name: 'status',
+						description: 'Filters results by whether transaction is open or closed.',
+						type: 'string'
+					},
+					{
+						name: 'from/to',
+						description: 'Returns records based on the beginning and ending transaction dates specified. Both parameters are optional. Using only one parameter allows filtering in one direction. Example: from=2019-09-01T00:00:00&to=2019-09-10T00:00:00',
+						type: 'timestamp'
+					},
+					{
+						name: 'location',
+						description: 'Filters transactions according to the name of the location.',
+						type: 'string'
+					},
+					{
+						name: 'createdsince/updatedsince',
+						description: 'Filters transactions created or updated since a specified date/time.',
+						type: 'timestamp'
+					}
+				]
+			}
+		},
 		sosApiUrl: 'https://developer.sosinventory.com/apidoc/Adjustment',
 		sosHelpUrl: 'https://help.sosinventory.com/v8-adjustment-transaction-interaction',
 		fields: [
@@ -393,7 +512,9 @@ exports.tables = [
 							description: 'The unique identifier for this adjustment line item. ID field is ignored on create requests.',
 							type: 'integer',
 							source: 'object',
-							property: 'id'
+							property: 'id',
+							nulls: false,
+							unique: true
 						},
 						{
 							name: 'linenumber',
@@ -502,12 +623,55 @@ exports.tables = [
 	},
 	{
 		name: 'bins',
+		sosObject: 'Bins',
 		description: 'Bins provide a way of managing the place for each item within a given location. Bins are available on Plus plans and Pro plans.',
 		reference: true,
-		api: 'bins',
-		supportsFromTo: false,
-		supportsCreatedSinceUpdatedSince: false,
-		sosObject: 'Bins',
+		api: {
+			query: {
+				endpoint: '/api/v2/bins',
+				description: 'Returns a list of bins objects.',
+				method: 'GET',
+				results: [
+					{
+						name: 'count',
+						description: 'The number of results returned in this query.',
+						type: 'integer'
+					},
+					{
+						name: 'totalCount',
+						description: 'The total number of records that match the filters of this query.',
+						type: 'integer'
+					},
+					{
+						name: 'data',
+						description: 'An array of invoice objects.',
+						type: 'array'
+					},
+					{
+						name: 'status',
+						description: 'The status of the query. Will be “ok” if successful, otherwise this matches with the message field to indicate why the call failed.',
+						type: 'string'
+					},
+					{
+						name: 'message',
+						description: 'A descriptive message indicating why the query was unsuccessful.',
+						type: 'string'
+					}
+				],
+				arguments: [
+					{
+						name: 'start',
+						description: 'A cursor used in pagination. This is the row number of the full set of results. The API limits results to a max of 200 results per call. If you want to retrieve the next set of results you can use this parameter to retrive the next set of results. For example if you are retrieving 200 results at a time, you can set start=201 to retrieve the next page of results.',
+						type: 'integer'
+					},
+					{
+						name: 'maxresults',
+						description: 'The maximum number of results you want to return. The default is 200, the maximum value allowed.',
+						type: 'integer'
+					}
+				]
+			}
+		},
 		sosApiUrl: 'https://developer.sosinventory.com/apidoc/references#bins',
 		sosHelpUrl: 'https://help.sosinventory.com/v8-bins',
 		fields: [
@@ -590,12 +754,85 @@ exports.tables = [
 	},
 	{
 		name: 'builds',
-		description: 'A build transaction uses raw materials to assemble a finished good. This transaction results in a decrease in the inventory of the raw materials and an increase in the inventory of the assembled item.',
-		primary: false,
-		api: 'build',
-		supportsFromTo: true,
-		supportsCreatedSinceUpdatedSince: true,
 		sosObject: 'Build',
+		description: 'A build transaction uses raw materials to assemble a finished good. This transaction results in a decrease in the inventory of the raw materials and an increase in the inventory of the assembled item.',
+		primary: true,
+		api: {
+			query: {
+				endpoint: '/api/v2/build',
+				description: 'Returns a list of build objects.',
+				method: 'GET',
+				results: [
+					{
+						name: 'count',
+						description: 'The number of results returned in this query.',
+						type: 'integer'
+					},
+					{
+						name: 'totalCount',
+						description: 'The total number of records that match the filters of this query.',
+						type: 'integer'
+					},
+					{
+						name: 'data',
+						description: 'An array of invoice objects.',
+						type: 'array'
+					},
+					{
+						name: 'status',
+						description: 'The status of the query. Will be “ok” if successful, otherwise this matches with the message field to indicate why the call failed.',
+						type: 'string'
+					},
+					{
+						name: 'message',
+						description: 'A descriptive message indicating why the query was unsuccessful.',
+						type: 'string'
+					}
+				],
+				arguments: [
+					{
+						name: 'start',
+						description: 'A cursor used in pagination. This is the row number of the full set of results. The API limits results to a max of 200 results per call. If you want to retrieve the next set of results you can use this parameter to retrive the next set of results. For example if you are retrieving 200 results at a time, you can set start=201 to retrieve the next page of results.',
+						type: 'integer'
+					},
+					{
+						name: 'maxresults',
+						description: 'The maximum number of results you want to return. The default is 200, the maximum value allowed.',
+						type: 'integer'
+					},
+					{
+						name: 'summary',
+						description: 'If this parameter is present (the value doesn\'t matter, and doesn\'t need to be specified), only the summary attributes of the estimate will be returned.',
+						type: 'string'
+					},
+					{
+						name: 'query',
+						description: 'This parameter will filter the results by matches of the string on the following fields: number, id, comment, location name, or output item name.',
+						type: 'string'
+					},
+					{
+						name: 'archived',
+						description: 'A "yes" returns archived records only; a "no" returns only those that have not been archived.',
+						type: 'string'
+					},
+					{
+						name: 'from/to',
+						description: 'Returns records based on the beginning and ending transaction dates specified. Both parameters are optional. Using only one parameter allows filtering in one direction. Example: from=2019-09-01T00:00:00&to=2019-09-10T00:00:00',
+						type: 'timestamp'
+					},
+					{
+						name: 'location',
+						description: 'Filters transactions according to the name of the location.',
+						type: 'string'
+					},
+					{
+						name: 'createdsince/updatedsince',
+						description: 'Filters transactions created or updated since a specified date/time.',
+						type: 'timestamp'
+					}
+				]
+			}
+		},
 		sosApiUrl: 'https://developer.sosinventory.com/apidoc/Build',
 		sosHelpUrl: 'https://help.sosinventory.com/v9-builds-and-the-builds-list',
 		fields: [
@@ -707,7 +944,9 @@ exports.tables = [
 							description: 'The unique identifier for this adjustment line item. ID field is ignored on create requests.',
 							type: 'integer',
 							source: 'object',
-							property: 'id'
+							property: 'id',
+							nulls: false,
+							unique: true
 						},
 						{
 							name: 'linenumber',
@@ -886,7 +1125,9 @@ exports.tables = [
 							description: 'The unique identifier for this adjustment line item. ID field is ignored on create requests.',
 							type: 'integer',
 							source: 'object',
-							property: 'id'
+							property: 'id',
+							nulls: false,
+							unique: true
 						},
 						{
 							name: 'linenumber',
@@ -1058,12 +1299,10 @@ exports.tables = [
 	},
 	{
 		name: 'categories',
+		sosObject: null,
 		description: 'A derived table representing item categories extracted from the Items table. SOS Inventory does not provide a categories API; categories must be reconstructed from item.category JSON.',
 		support: true,
 		api: null,
-		supportsFromTo: false,
-		supportsCreatedSinceUpdatedSince: false,
-		sosObject: null,
 		sosApiUrl: null,
 		sosHelpUrl: 'https://help.sosinventory.com/v8-creating-and-using-categories',
 		fields: [
@@ -1084,12 +1323,55 @@ exports.tables = [
 	},
 	{
 		name: 'channels',
+		sosObject: 'Channel',
 		description: 'The sales channels configured for this account.',
 		reference: true,
-		api: 'channel',
-		supportsFromTo: false,
-		supportsCreatedSinceUpdatedSince: false,
-		sosObject: 'Channel',
+		api: {
+			query: {
+				endpoint: '/api/v2/channel',
+				description: 'Returns a list of channel objects.',
+				method: 'GET',
+				results: [
+					{
+						name: 'count',
+						description: 'The number of results returned in this query.',
+						type: 'integer'
+					},
+					{
+						name: 'totalCount',
+						description: 'The total number of records that match the filters of this query.',
+						type: 'integer'
+					},
+					{
+						name: 'data',
+						description: 'An array of invoice objects.',
+						type: 'array'
+					},
+					{
+						name: 'status',
+						description: 'The status of the query. Will be “ok” if successful, otherwise this matches with the message field to indicate why the call failed.',
+						type: 'string'
+					},
+					{
+						name: 'message',
+						description: 'A descriptive message indicating why the query was unsuccessful.',
+						type: 'string'
+					}
+				],
+				arguments: [
+					{
+						name: 'start',
+						description: 'A cursor used in pagination. This is the row number of the full set of results. The API limits results to a max of 200 results per call. If you want to retrieve the next set of results you can use this parameter to retrive the next set of results. For example if you are retrieving 200 results at a time, you can set start=201 to retrieve the next page of results.',
+						type: 'integer'
+					},
+					{
+						name: 'maxresults',
+						description: 'The maximum number of results you want to return. The default is 200, the maximum value allowed.',
+						type: 'integer'
+					}
+				]
+			}
+		},
 		sosApiUrl: 'https://developer.sosinventory.com/apidoc/references#channel',
 		sosHelpUrl: 'https://help.sosinventory.com/v8-channels-and-customer-types',
 		fields: [
@@ -1115,12 +1397,55 @@ exports.tables = [
 	},
 	{
 		name: 'classes',
+		sosObject: 'Class',
 		description: 'This represents the class used for class tracking.',
 		reference: true,
-		api: 'class',
-		supportsFromTo: false,
-		supportsCreatedSinceUpdatedSince: false,
-		sosObject: 'Class',
+		api: {
+			query: {
+				endpoint: '/api/v2/class',
+				description: 'Returns a list of class objects.',
+				method: 'GET',
+				results: [
+					{
+						name: 'count',
+						description: 'The number of results returned in this query.',
+						type: 'integer'
+					},
+					{
+						name: 'totalCount',
+						description: 'The total number of records that match the filters of this query.',
+						type: 'integer'
+					},
+					{
+						name: 'data',
+						description: 'An array of invoice objects.',
+						type: 'array'
+					},
+					{
+						name: 'status',
+						description: 'The status of the query. Will be “ok” if successful, otherwise this matches with the message field to indicate why the call failed.',
+						type: 'string'
+					},
+					{
+						name: 'message',
+						description: 'A descriptive message indicating why the query was unsuccessful.',
+						type: 'string'
+					}
+				],
+				arguments: [
+					{
+						name: 'start',
+						description: 'A cursor used in pagination. This is the row number of the full set of results. The API limits results to a max of 200 results per call. If you want to retrieve the next set of results you can use this parameter to retrive the next set of results. For example if you are retrieving 200 results at a time, you can set start=201 to retrieve the next page of results.',
+						type: 'integer'
+					},
+					{
+						name: 'maxresults',
+						description: 'The maximum number of results you want to return. The default is 200, the maximum value allowed.',
+						type: 'integer'
+					}
+				]
+			}
+		},
 		sosApiUrl: 'https://developer.sosinventory.com/apidoc/references#class',
 		sosHelpUrl: 'https://help.sosinventory.com/v8-class-and-department-tracking',
 		fields: [
@@ -1161,12 +1486,85 @@ exports.tables = [
 	},
 	{
 		name: 'customers',
-		description: 'Represents a customer record used for sales, billing, shipping, pricing, tax configuration, and QuickBooks synchronization. Includes contact information, addresses, payment terms, pricing tier, tax settings, custom fields, and optional QuickBooks metadata such as sync status and stored payment token details.',
-		primary: false,
-		api: 'customer',
-		supportsFromTo: false,
-		supportsCreatedSinceUpdatedSince: true,
 		sosObject: 'Customer',
+		description: 'Represents a customer record used for sales, billing, shipping, pricing, tax configuration, and QuickBooks synchronization. Includes contact information, addresses, payment terms, pricing tier, tax settings, custom fields, and optional QuickBooks metadata such as sync status and stored payment token details.',
+		primary: true,
+		api: {
+			query: {
+				endpoint: '/api/v2/customer',
+				description: 'Returns a list of customer objects.',
+				method: 'GET',
+				results: [
+					{
+						name: 'count',
+						description: 'The number of results returned in this query.',
+						type: 'integer'
+					},
+					{
+						name: 'totalCount',
+						description: 'The total number of records that match the filters of this query.',
+						type: 'integer'
+					},
+					{
+						name: 'data',
+						description: 'An array of invoice objects.',
+						type: 'array'
+					},
+					{
+						name: 'status',
+						description: 'The status of the query. Will be “ok” if successful, otherwise this matches with the message field to indicate why the call failed.',
+						type: 'string'
+					},
+					{
+						name: 'message',
+						description: 'A descriptive message indicating why the query was unsuccessful.',
+						type: 'string'
+					}
+				],
+				arguments: [
+					{
+						name: 'start',
+						description: 'A cursor used in pagination. This is the row number of the full set of results. The API limits results to a max of 200 results per call. If you want to retrieve the next set of results you can use this parameter to retrive the next set of results. For example if you are retrieving 200 results at a time, you can set start=201 to retrieve the next page of results.',
+						type: 'integer'
+					},
+					{
+						name: 'maxresults',
+						description: 'The maximum number of results you want to return. The default is 200, the maximum value allowed.',
+						type: 'integer'
+					},
+					{
+						name: 'summary',
+						description: 'If this parameter is present (the value doesn\'t matter, and doesn\'t need to be specified), only the summary attributes of the estimate will be returned.',
+						type: 'string'
+					},
+					{
+						name: 'query',
+						description: 'This parameter will filter the results by matches of the string on the following fields: name, fullName, or notes.',
+						type: 'string'
+					},
+					{
+						name: 'name',
+						description: 'This parameter will filter the results by matches of the name or fullname fields.',
+						type: 'string'
+					},
+					{
+						name: 'email',
+						description: 'This parameter will filter the results by matches of the customer\'s email.',
+						type: 'string'
+					},
+					{
+						name: 'archived',
+						description: 'A "yes" returns archived records only; a "no" returns only those that have not been archived.',
+						type: 'string'
+					},
+					{
+						name: 'createdsince/updatedsince',
+						description: 'Filters transactions created or updated since a specified date/time.',
+						type: 'timestamp'
+					}
+				]
+			}
+		},
 		sosApiUrl: 'https://developer.sosinventory.com/apidoc/Customer',
 		sosHelpUrl: 'https://help.sosinventory.com/v8-customer-management-and-the-customers-list',
 		fields: [
@@ -1425,12 +1823,55 @@ exports.tables = [
 	},
 	{
 		name: 'customFields',
+		sosObject: 'Custom field',
 		description: 'Custom fields allow additional data to be captured for object definitions and transactions.',
 		reference: true,
-		api: 'customfield',
-		supportsFromTo: false,
-		supportsCreatedSinceUpdatedSince: false,
-		sosObject: 'Custom field',
+		api: {
+			query: {
+				endpoint: '/api/v2/customfield',
+				description: 'Returns a list of customfield objects.',
+				method: 'GET',
+				results: [
+					{
+						name: 'count',
+						description: 'The number of results returned in this query.',
+						type: 'integer'
+					},
+					{
+						name: 'totalCount',
+						description: 'The total number of records that match the filters of this query.',
+						type: 'integer'
+					},
+					{
+						name: 'data',
+						description: 'An array of invoice objects.',
+						type: 'array'
+					},
+					{
+						name: 'status',
+						description: 'The status of the query. Will be “ok” if successful, otherwise this matches with the message field to indicate why the call failed.',
+						type: 'string'
+					},
+					{
+						name: 'message',
+						description: 'A descriptive message indicating why the query was unsuccessful.',
+						type: 'string'
+					}
+				],
+				arguments: [
+					{
+						name: 'start',
+						description: 'A cursor used in pagination. This is the row number of the full set of results. The API limits results to a max of 200 results per call. If you want to retrieve the next set of results you can use this parameter to retrive the next set of results. For example if you are retrieving 200 results at a time, you can set start=201 to retrieve the next page of results.',
+						type: 'integer'
+					},
+					{
+						name: 'maxresults',
+						description: 'The maximum number of results you want to return. The default is 200, the maximum value allowed.',
+						type: 'integer'
+					}
+				]
+			}
+		},
 		sosApiUrl: 'https://developer.sosinventory.com/apidoc/references#customfield',
 		sosHelpUrl: 'https://help.sosinventory.com/v8-custom-fields',
 		fields: [
@@ -1471,12 +1912,55 @@ exports.tables = [
 	},
 	{
 		name: 'departments',
+		sosObject: 'Department',
 		description: 'This represents the department used for department tracking.',
 		reference: true,
-		api: 'department',
-		supportsFromTo: false,
-		supportsCreatedSinceUpdatedSince: false,
-		sosObject: 'Department',
+		api: {
+			query: {
+				endpoint: '/api/v2/department',
+				description: 'Returns a list of department objects.',
+				method: 'GET',
+				results: [
+					{
+						name: 'count',
+						description: 'The number of results returned in this query.',
+						type: 'integer'
+					},
+					{
+						name: 'totalCount',
+						description: 'The total number of records that match the filters of this query.',
+						type: 'integer'
+					},
+					{
+						name: 'data',
+						description: 'An array of invoice objects.',
+						type: 'array'
+					},
+					{
+						name: 'status',
+						description: 'The status of the query. Will be “ok” if successful, otherwise this matches with the message field to indicate why the call failed.',
+						type: 'string'
+					},
+					{
+						name: 'message',
+						description: 'A descriptive message indicating why the query was unsuccessful.',
+						type: 'string'
+					}
+				],
+				arguments: [
+					{
+						name: 'start',
+						description: 'A cursor used in pagination. This is the row number of the full set of results. The API limits results to a max of 200 results per call. If you want to retrieve the next set of results you can use this parameter to retrive the next set of results. For example if you are retrieving 200 results at a time, you can set start=201 to retrieve the next page of results.',
+						type: 'integer'
+					},
+					{
+						name: 'maxresults',
+						description: 'The maximum number of results you want to return. The default is 200, the maximum value allowed.',
+						type: 'integer'
+					}
+				]
+			}
+		},
 		sosApiUrl: 'https://developer.sosinventory.com/apidoc/references#department',
 		sosHelpUrl: 'https://help.sosinventory.com/v8-class-and-department-tracking',
 		fields: [
@@ -1502,86 +1986,89 @@ exports.tables = [
 	},
 	{
 		name: 'estimates',
-		description: 'An estimate is a quotation to a customer, or an offer to provide products or services at a specified price. The terms of an estimate (binding, non-binding, etc.) are set by your company policies.',
-		primary: false,
-		api: {
-			endpoint: '/api/v2/estimate',
-			results: [
-				{
-					name: 'count',
-					description: 'The number of results returned in this query.',
-					type: 'integer'
-				},
-				{
-					name: 'totalCount',
-					description: 'The total number of records that match the filters of this query.',
-					type: 'integer'
-				},
-				{
-					name: 'data',
-					description: 'An array of invoice objects.',
-					type: 'array'
-				},
-				{
-					name: 'status',
-					description: 'The status of the query. Will be “ok” if successful, otherwise this matches with the message field to indicate why the call failed.',
-					type: 'string'
-				},
-				{
-					name: 'message',
-					description: 'A descriptive message indicating why the query was unsuccessful.',
-					type: 'string'
-				}
-			],
-			arguments: [
-				{
-					name: 'start',
-					description: 'A cursor used in pagination. This is the row number of the full set of results. The API limits results to a max of 200 results per call. If you want to retrieve the next set of results you can use this parameter to retrive the next set of results. For example if you are retrieving 200 results at a time, you can set start=201 to retrieve the next page of results.',
-					type: 'integer'
-				},
-				{
-					name: 'maxresults',
-					description: 'The maximum number of results you want to return. The default is 200, the maximum value allowed.',
-					type: 'integer'
-				},
-				{
-					name: 'status',
-					description: 'Filters the results by void status.',
-					type: 'string'
-				},
-				{
-					name: 'summary',
-					description: 'If this parameter is present (the value doesn\'t matter, and doesn\'t need to be specified), only the summary attributes of the estimate will be returned.',
-					type: 'string'
-				},
-				{
-					name: 'query',
-					description: 'This parameter will filter the results by matches of the string on the following fields: number, comment, customerPO, or customer name.',
-					type: 'string'
-				},
-				{
-					name: 'archived',
-					description: 'A "yes" returns archived records only; a "no" returns only those that have not been archived.',
-					type: 'string'
-				},
-				{
-					name: 'channel',
-					description: 'Filters transactions according to the name of the channel.',
-					type: 'string'
-				},
-				{
-					name: 'from/to',
-					description: 'Returns records based on the beginning and ending transaction dates specified. Both parameters are optional. Using only one parameter allows filtering in one direction. Example: from=2019-09-01T00:00:00&to=2019-09-10T00:00:00',
-					type: 'timestamp'
-				},
-				{
-					name: 'createdsince/updatedsince',
-					description: 'Filters transactions created or updated since a specified date/time.',
-					type: 'timestamp'
-				}
-			]
-		},
 		sosObject: 'Estimate',
+		description: 'An estimate is a quotation to a customer, or an offer to provide products or services at a specified price. The terms of an estimate (binding, non-binding, etc.) are set by your company policies.',
+		primary: true,
+		api: {
+			query: {
+				endpoint: '/api/v2/estimate',
+				description: 'Returns a list of estimate objects.',
+				results: [
+					{
+						name: 'count',
+						description: 'The number of results returned in this query.',
+						type: 'integer'
+					},
+					{
+						name: 'totalCount',
+						description: 'The total number of records that match the filters of this query.',
+						type: 'integer'
+					},
+					{
+						name: 'data',
+						description: 'An array of invoice objects.',
+						type: 'array'
+					},
+					{
+						name: 'status',
+						description: 'The status of the query. Will be “ok” if successful, otherwise this matches with the message field to indicate why the call failed.',
+						type: 'string'
+					},
+					{
+						name: 'message',
+						description: 'A descriptive message indicating why the query was unsuccessful.',
+						type: 'string'
+					}
+				],
+				arguments: [
+					{
+						name: 'start',
+						description: 'A cursor used in pagination. This is the row number of the full set of results. The API limits results to a max of 200 results per call. If you want to retrieve the next set of results you can use this parameter to retrive the next set of results. For example if you are retrieving 200 results at a time, you can set start=201 to retrieve the next page of results.',
+						type: 'integer'
+					},
+					{
+						name: 'maxresults',
+						description: 'The maximum number of results you want to return. The default is 200, the maximum value allowed.',
+						type: 'integer'
+					},
+					{
+						name: 'status',
+						description: 'Filters the results by void status.',
+						type: 'string'
+					},
+					{
+						name: 'summary',
+						description: 'If this parameter is present (the value doesn\'t matter, and doesn\'t need to be specified), only the summary attributes of the estimate will be returned.',
+						type: 'string'
+					},
+					{
+						name: 'query',
+						description: 'This parameter will filter the results by matches of the string on the following fields: number, comment, customerPO, or customer name.',
+						type: 'string'
+					},
+					{
+						name: 'archived',
+						description: 'A "yes" returns archived records only; a "no" returns only those that have not been archived.',
+						type: 'string'
+					},
+					{
+						name: 'channel',
+						description: 'Filters transactions according to the name of the channel.',
+						type: 'string'
+					},
+					{
+						name: 'from/to',
+						description: 'Returns records based on the beginning and ending transaction dates specified. Both parameters are optional. Using only one parameter allows filtering in one direction. Example: from=2019-09-01T00:00:00&to=2019-09-10T00:00:00',
+						type: 'timestamp'
+					},
+					{
+						name: 'createdsince/updatedsince',
+						description: 'Filters transactions created or updated since a specified date/time.',
+						type: 'timestamp'
+					}
+				]
+			}
+		},
 		sosApiUrl: 'https://developer.sosinventory.com/apidoc/Estimate',
 		sosHelpUrl: 'https://help.sosinventory.com/v8-estimates-and-the-estimates-list',
 		fields: [
@@ -1812,7 +2299,9 @@ exports.tables = [
 							description: 'The unique identifier for this estimate line item. ID field is ignored on create requests.',
 							type: 'integer',
 							source: 'object',
-							property: 'id'
+							property: 'id',
+							nulls: false,
+							unique: true
 						},
 						{
 							name: 'linenumber',
@@ -1987,81 +2476,84 @@ exports.tables = [
 	},
 	{
 		name: 'invoices',
-		description: 'An invoice is a bill to a customer requesting that they pay you a certain amount of money by a certain date.',
-		primary: false,
-		api: {
-			endpoint: '/api/v2/invoice',
-			results: [
-				{
-					name: 'count',
-					description: 'The number of results returned in this query.',
-					type: 'integer'
-				},
-				{
-					name: 'totalCount',
-					description: 'The total number of records that match the filters of this query.',
-					type: 'integer'
-				},
-				{
-					name: 'data',
-					description: 'An array of invoice objects.',
-					type: 'array'
-				},
-				{
-					name: 'status',
-					description: 'The status of the query. Will be “ok” if successful, otherwise this matches with the message field to indicate why the call failed.',
-					type: 'string'
-				},
-				{
-					name: 'message',
-					description: 'A descriptive message indicating why the query was unsuccessful.',
-					type: 'string'
-				}
-			],
-			arguments: [
-				{
-					name: 'start',
-					description: 'A cursor used in pagination. This is the row number of the full set of results. The API limits results to a max of 200 results per call. If you want to retrieve the next set of results you can use this parameter to retrive the next set of results. For example if you are retrieving 200 results at a time, you can set start=201 to retrieve the next page of results.',
-					type: 'integer'
-				},
-				{
-					name: 'maxresults',
-					description: 'The maximum number of results you want to return. The default is 200, the maximum value allowed.',
-					type: 'integer'
-				},
-				{
-					name: 'status',
-					description: 'Filters the results by void status.',
-					type: 'string'
-				},
-				{
-					name: 'summary',
-					description: 'If this parameter is present (the value doesn\'t matter, and doesn\'t need to be specified), only the summary attributes of the estimate will be returned.',
-					type: 'string'
-				},
-				{
-					name: 'query',
-					description: 'This parameter will filter the results by matches of the string on the following fields: number, comment, customerPO, or customer name.',
-					type: 'string'
-				},
-				{
-					name: 'archived',
-					description: 'A "yes" returns archived records only; a "no" returns only those that have not been archived.',
-					type: 'string'
-				},
-				{
-					name: 'from/to',
-					description: 'Returns records based on the beginning and ending transaction dates specified. Both parameters are optional. Using only one parameter allows filtering in one direction. Example: from=2019-09-01T00:00:00&to=2019-09-10T00:00:00',
-					type: 'timestamp'
-				},
-				{
-					name: 'createdsince/updatedsince',
-					description: 'Filters transactions created or updated since a specified date/time.',
-					type: 'timestamp'
-				}
-			]
-		},
 		sosObject: 'Invoice',
+		description: 'An invoice is a bill to a customer requesting that they pay you a certain amount of money by a certain date.',
+		primary: true,
+		api: {
+			query: {
+				endpoint: '/api/v2/invoice',
+				description: 'Returns a list of invoice objects.',
+				results: [
+					{
+						name: 'count',
+						description: 'The number of results returned in this query.',
+						type: 'integer'
+					},
+					{
+						name: 'totalCount',
+						description: 'The total number of records that match the filters of this query.',
+						type: 'integer'
+					},
+					{
+						name: 'data',
+						description: 'An array of invoice objects.',
+						type: 'array'
+					},
+					{
+						name: 'status',
+						description: 'The status of the query. Will be “ok” if successful, otherwise this matches with the message field to indicate why the call failed.',
+						type: 'string'
+					},
+					{
+						name: 'message',
+						description: 'A descriptive message indicating why the query was unsuccessful.',
+						type: 'string'
+					}
+				],
+				arguments: [
+					{
+						name: 'start',
+						description: 'A cursor used in pagination. This is the row number of the full set of results. The API limits results to a max of 200 results per call. If you want to retrieve the next set of results you can use this parameter to retrive the next set of results. For example if you are retrieving 200 results at a time, you can set start=201 to retrieve the next page of results.',
+						type: 'integer'
+					},
+					{
+						name: 'maxresults',
+						description: 'The maximum number of results you want to return. The default is 200, the maximum value allowed.',
+						type: 'integer'
+					},
+					{
+						name: 'status',
+						description: 'Filters the results by void status.',
+						type: 'string'
+					},
+					{
+						name: 'summary',
+						description: 'If this parameter is present (the value doesn\'t matter, and doesn\'t need to be specified), only the summary attributes of the estimate will be returned.',
+						type: 'string'
+					},
+					{
+						name: 'query',
+						description: 'This parameter will filter the results by matches of the string on the following fields: number, comment, customerPO, or customer name.',
+						type: 'string'
+					},
+					{
+						name: 'archived',
+						description: 'A "yes" returns archived records only; a "no" returns only those that have not been archived.',
+						type: 'string'
+					},
+					{
+						name: 'from/to',
+						description: 'Returns records based on the beginning and ending transaction dates specified. Both parameters are optional. Using only one parameter allows filtering in one direction. Example: from=2019-09-01T00:00:00&to=2019-09-10T00:00:00',
+						type: 'timestamp'
+					},
+					{
+						name: 'createdsince/updatedsince',
+						description: 'Filters transactions created or updated since a specified date/time.',
+						type: 'timestamp'
+					}
+				]
+			}
+		},
 		sosApiUrl: 'https://developer.sosinventory.com/apidoc/Invoice',
 		sosHelpUrl: 'https://help.sosinventory.com/v8-invoices-and-the-invoices-list',
 		fields: [
@@ -2332,7 +2824,9 @@ exports.tables = [
 							description: 'The unique identifier for this estimate line item. ID field is ignored on create requests.',
 							type: 'integer',
 							source: 'object',
-							property: 'id'
+							property: 'id',
+							nulls: false,
+							unique: true
 						},
 						{
 							name: 'linenumber',
@@ -2499,8 +2993,9 @@ exports.tables = [
 	},
 	{
 		name: 'itemReceipts',
+		sosObject: 'Item Receipt',
 		description: 'Items are received into inventory by creating item receipts.',
-		primary: false,
+		primary: true,
 		api: {
 			query: {
 				endpoint: '/api/v2/itemreceipt',
@@ -2567,7 +3062,6 @@ exports.tables = [
 				]
 			}
 		},
-		sosObject: 'Item Receipt',
 		sosApiUrl: 'https://developer.sosinventory.com/apidoc/ItemReceipt',
 		sosHelpUrl: 'https://help.sosinventory.com/v8-item-receipts-and-the-item-receipts-list',
 		fields: [
@@ -2747,7 +3241,9 @@ exports.tables = [
 							description: 'The unique identifier for this estimate line item. ID field is ignored on create requests.',
 							type: 'integer',
 							source: 'object',
-							property: 'id'
+							property: 'id',
+							nulls: false,
+							unique: true
 						},
 						{
 							name: 'linenumber',
@@ -2933,12 +3429,105 @@ exports.tables = [
 	},
 	{
 		name: 'items',
-		description: 'Items are the most important pieces of data in SOS Inventory. They drive everything else in the system. Items can represent almost anything—they do not have to be things stored in inventory. An item is simply something you want to track in SOS Inventory. Examples include a product you sell, a service you provide, raw materials you use in manufacturing, and your overhead expenses.',
-		primary: false,
-		api: 'item',
-		supportsFromTo: false,
-		supportsCreatedSinceUpdatedSince: true,
 		sosObject: 'Item',
+		description: 'Items are the most important pieces of data in SOS Inventory. They drive everything else in the system. Items can represent almost anything—they do not have to be things stored in inventory. An item is simply something you want to track in SOS Inventory. Examples include a product you sell, a service you provide, raw materials you use in manufacturing, and your overhead expenses.',
+		primary: true,
+		api: {
+			query: {
+				endpoint: '/api/v2/item',
+				description: 'Returns a list of item objects.',
+				method: 'GET',
+				results: [
+					{
+						name: 'count',
+						description: 'The number of results returned in this query.',
+						type: 'integer'
+					},
+					{
+						name: 'totalCount',
+						description: 'The total number of records that match the filters of this query.',
+						type: 'integer'
+					},
+					{
+						name: 'data',
+						description: 'An array of invoice objects.',
+						type: 'array'
+					},
+					{
+						name: 'status',
+						description: 'The status of the query. Will be “ok” if successful, otherwise this matches with the message field to indicate why the call failed.',
+						type: 'string'
+					},
+					{
+						name: 'message',
+						description: 'A descriptive message indicating why the query was unsuccessful.',
+						type: 'string'
+					}
+				],
+				arguments: [
+					{
+						name: 'start',
+						description: 'A cursor used in pagination. This is the row number of the full set of results. The API limits results to a max of 200 results per call. If you want to retrieve the next set of results you can use this parameter to retrive the next set of results. For example if you are retrieving 200 results at a time, you can set start=201 to retrieve the next page of results.',
+						type: 'integer'
+					},
+					{
+						name: 'maxresults',
+						description: 'The maximum number of results you want to return. The default is 200, the maximum value allowed.',
+						type: 'integer'
+					},
+					{
+						name: 'summary',
+						description: 'If this parameter is present (the value doesn\'t matter, and doesn\'t need to be specified), only the summary attributes of the item will be returned.',
+						type: 'string'
+					},
+					{
+						name: 'query',
+						description: 'This parameter will filter the results by matches of the string on the following fields: fullName, description, notes, barcode, sku, vendorPartNumber, or tags.',
+						type: 'string'
+					},
+					{
+						name: 'archived',
+						description: 'A "yes" returns archived records only; a "no" returns only those that have not been archived.',
+						type: 'string'
+					},
+					{
+						name: 'sku',
+						description: 'Search for a single SKU.',
+						type: 'string'
+					},
+					{
+						name: 'tags',
+						description: 'Returns records that match the provided comma separated list of tags.',
+						type: 'string'
+					},
+					{
+						name: 'type',
+						description: 'Returns records that match the provided item type.',
+						type: 'string'
+					},
+					{
+						name: 'ids',
+						description: 'Filters the results by a list of item ids. Example: ids=1,2,3',
+						type: 'string'
+					},
+					{
+						name: 'location',
+						description: 'Filters items according to the name of the location. This will also cause the inventory quantity values to reflect the totals at this location.',
+						type: 'string'
+					},
+					{
+						name: 'category',
+						description: 'Filters items according to the category name.',
+						type: 'string'
+					},
+					{
+						name: 'createdsince/updatedsince',
+						description: 'Filters transactions created or updated since a specified date/time.',
+						type: 'timestamp'
+					}
+				]
+			}
+		},
 		sosApiUrl: 'https://developer.sosinventory.com/apidoc/Item',
 		sosHelpUrl: 'https://help.sosinventory.com/v8-items-list',
 		fields: [
@@ -3368,12 +3957,35 @@ exports.tables = [
 	},
 	{
 		name: 'itemBoms',
+		sosObject: 'BOM',
 		description: 'A derived support table representing Bill of Materials (BOM) lines for items. BOMs are retrieved per item using the item/:id/bom endpoint.',
 		support: true,
-		api: 'item/:id/bom',
-		supportsFromTo: false,
-		supportsCreatedSinceUpdatedSince: false,
-		sosObject: 'BOM',
+		api: {
+			query: {
+				endpoint: '/api/v2/item/:id/bom',
+				description: 'This returns an array of the Bill of Material for an item, if the item is an assembly or kit.',
+				method: 'GET',
+				results: [
+					{
+						name: 'item',
+						description: 'The item this BOM data represents.',
+						type: 'reference'
+					},
+					{
+						name: 'lines',
+						description: 'The lines for this BOM.',
+						type: 'integer'
+					}
+				],
+				arguments: [
+					{
+						name: 'id',
+						description: 'The id of the item.',
+						type: 'integer'
+					}
+				]
+			}
+		},
 		sosApiUrl: 'https://developer.sosinventory.com/apidoc/Item',
 		sosHelpUrl: 'https://help.sosinventory.com/v8-bulk-editing-boms-bills-of-materials',
 		fields: [
@@ -3471,71 +4083,74 @@ exports.tables = [
 	},
 	{
 		name: 'jobs',
-		description: 'Jobs, available on the Pro Plan of SOS Inventory, provide a convenient way to organize groups of transactions. Each job--and even each stage of a job--can have its own profit-and-loss statement, showing precisely how much money was made or lost on a given set',
-		primary: false,
-		api: {
-			endpoint: '/api/v2/job',
-			results: [
-				{
-					name: 'count',
-					description: 'The number of results returned in this query.',
-					type: 'integer'
-				},
-				{
-					name: 'totalCount',
-					description: 'The total number of records that match the filters of this query.',
-					type: 'integer'
-				},
-				{
-					name: 'data',
-					description: 'An array of invoice objects.',
-					type: 'array'
-				},
-				{
-					name: 'status',
-					description: 'The status of the query. Will be “ok” if successful, otherwise this matches with the message field to indicate why the call failed.',
-					type: 'string'
-				},
-				{
-					name: 'message',
-					description: 'A descriptive message indicating why the query was unsuccessful.',
-					type: 'string'
-				}
-			],
-			arguments: [
-				{
-					name: 'start',
-					description: 'A cursor used in pagination. This is the row number of the full set of results. The API limits results to a max of 200 results per call. If you want to retrieve the next set of results you can use this parameter to retrive the next set of results. For example if you are retrieving 200 results at a time, you can set start=201 to retrieve the next page of results.',
-					type: 'integer'
-				},
-				{
-					name: 'maxresults',
-					description: 'The maximum number of results you want to return. The default is 200, the maximum value allowed.',
-					type: 'integer'
-				},
-				{
-					name: 'query',
-					description: 'This parameter will filter the results by matches of the string on the following fields: number, comment, customerPO, or customer name.',
-					type: 'string'
-				},
-				{
-					name: 'archived',
-					description: 'A "yes" returns archived records only; a "no" returns only those that have not been archived.',
-					type: 'string'
-				},
-				{
-					name: 'status',
-					description: 'Filters the result by whether the transaction is open or closed.',
-					type: 'string'
-				},
-				{
-					name: 'createdsince/updatedsince',
-					description: 'Filters transactions created or updated since a specified date/time.',
-					type: 'timestamp'
-				}
-			]
-		},
 		sosObject: 'Job',
+		description: 'Jobs, available on the Pro Plan of SOS Inventory, provide a convenient way to organize groups of transactions. Each job--and even each stage of a job--can have its own profit-and-loss statement, showing precisely how much money was made or lost on a given set',
+		primary: true,
+		api: {
+			query: {
+				endpoint: '/api/v2/job',
+				description: 'Returns a list of job objects.',
+				results: [
+					{
+						name: 'count',
+						description: 'The number of results returned in this query.',
+						type: 'integer'
+					},
+					{
+						name: 'totalCount',
+						description: 'The total number of records that match the filters of this query.',
+						type: 'integer'
+					},
+					{
+						name: 'data',
+						description: 'An array of invoice objects.',
+						type: 'array'
+					},
+					{
+						name: 'status',
+						description: 'The status of the query. Will be “ok” if successful, otherwise this matches with the message field to indicate why the call failed.',
+						type: 'string'
+					},
+					{
+						name: 'message',
+						description: 'A descriptive message indicating why the query was unsuccessful.',
+						type: 'string'
+					}
+				],
+				arguments: [
+					{
+						name: 'start',
+						description: 'A cursor used in pagination. This is the row number of the full set of results. The API limits results to a max of 200 results per call. If you want to retrieve the next set of results you can use this parameter to retrive the next set of results. For example if you are retrieving 200 results at a time, you can set start=201 to retrieve the next page of results.',
+						type: 'integer'
+					},
+					{
+						name: 'maxresults',
+						description: 'The maximum number of results you want to return. The default is 200, the maximum value allowed.',
+						type: 'integer'
+					},
+					{
+						name: 'query',
+						description: 'This parameter will filter the results by matches of the string on the following fields: number, comment, customerPO, or customer name.',
+						type: 'string'
+					},
+					{
+						name: 'archived',
+						description: 'A "yes" returns archived records only; a "no" returns only those that have not been archived.',
+						type: 'string'
+					},
+					{
+						name: 'status',
+						description: 'Filters the result by whether the transaction is open or closed.',
+						type: 'string'
+					},
+					{
+						name: 'createdsince/updatedsince',
+						description: 'Filters transactions created or updated since a specified date/time.',
+						type: 'timestamp'
+					}
+				]
+			}
+		},
 		sosApiUrl: 'https://developer.sosinventory.com/apidoc/Job',
 		sosHelpUrl: 'https://help.sosinventory.com/v8-jobs',
 		fields: [
@@ -3611,12 +4226,55 @@ exports.tables = [
 	},
 	{
 		name: 'locations',
+		sosObject: 'Location',
 		description: 'The defined locations for the account. The Companion Plan allows only one location.',
 		reference: true,
-		api: 'location',
-		supportsFromTo: false,
-		supportsCreatedSinceUpdatedSince: false,
-		sosObject: 'Location',
+		api: {
+			query: {
+				endpoint: '/api/v2/location',
+				description: 'Returns a list of location objects.',
+				method: 'GET',
+				results: [
+					{
+						name: 'count',
+						description: 'The number of results returned in this query.',
+						type: 'integer'
+					},
+					{
+						name: 'totalCount',
+						description: 'The total number of records that match the filters of this query.',
+						type: 'integer'
+					},
+					{
+						name: 'data',
+						description: 'An array of invoice objects.',
+						type: 'array'
+					},
+					{
+						name: 'status',
+						description: 'The status of the query. Will be “ok” if successful, otherwise this matches with the message field to indicate why the call failed.',
+						type: 'string'
+					},
+					{
+						name: 'message',
+						description: 'A descriptive message indicating why the query was unsuccessful.',
+						type: 'string'
+					}
+				],
+				arguments: [
+					{
+						name: 'start',
+						description: 'A cursor used in pagination. This is the row number of the full set of results. The API limits results to a max of 200 results per call. If you want to retrieve the next set of results you can use this parameter to retrive the next set of results. For example if you are retrieving 200 results at a time, you can set start=201 to retrieve the next page of results.',
+						type: 'integer'
+					},
+					{
+						name: 'maxresults',
+						description: 'The maximum number of results you want to return. The default is 200, the maximum value allowed.',
+						type: 'integer'
+					}
+				]
+			}
+		},
 		sosApiUrl: 'https://developer.sosinventory.com/apidoc/references#location',
 		sosHelpUrl: 'https://help.sosinventory.com/v8-locations',
 		fields: [
@@ -3728,8 +4386,9 @@ exports.tables = [
 	},
 	{
 		name: 'lots',
+		sosObject: 'Lot',
 		description: 'Lot tracking is used to track batches or groups of a specific item.',
-		primary: false,
+		primary: true,
 		api: {
 			query: {
 				endpoint: '/api/v2/lot',
@@ -3801,7 +4460,6 @@ exports.tables = [
 				]
 			}
 		},
-		sosObject: 'Lot',
 		sosApiUrl: 'https://developer.sosinventory.com/apidoc/Lot',
 		sosHelpUrl: 'https://help.sosinventory.com/v8-lots',
 		fields: [
@@ -3880,12 +4538,55 @@ exports.tables = [
 	},
 	{
 		name: 'orderStages',
+		sosObject: 'Order stage',
 		description: 'The stages through which an order proceeds to completion.',
 		reference: true,
-		api: 'orderstage',
-		supportsFromTo: false,
-		supportsCreatedSinceUpdatedSince: false,
-		sosObject: 'Order stage',
+		api: {
+			query: {
+				endpoint: '/api/v2/orderstage',
+				description: 'Returns a list of orderstage objects.',
+				method: 'GET',
+				results: [
+					{
+						name: 'count',
+						description: 'The number of results returned in this query.',
+						type: 'integer'
+					},
+					{
+						name: 'totalCount',
+						description: 'The total number of records that match the filters of this query.',
+						type: 'integer'
+					},
+					{
+						name: 'data',
+						description: 'An array of invoice objects.',
+						type: 'array'
+					},
+					{
+						name: 'status',
+						description: 'The status of the query. Will be “ok” if successful, otherwise this matches with the message field to indicate why the call failed.',
+						type: 'string'
+					},
+					{
+						name: 'message',
+						description: 'A descriptive message indicating why the query was unsuccessful.',
+						type: 'string'
+					}
+				],
+				arguments: [
+					{
+						name: 'start',
+						description: 'A cursor used in pagination. This is the row number of the full set of results. The API limits results to a max of 200 results per call. If you want to retrieve the next set of results you can use this parameter to retrive the next set of results. For example if you are retrieving 200 results at a time, you can set start=201 to retrieve the next page of results.',
+						type: 'integer'
+					},
+					{
+						name: 'maxresults',
+						description: 'The maximum number of results you want to return. The default is 200, the maximum value allowed.',
+						type: 'integer'
+					}
+				]
+			}
+		},
 		sosApiUrl: 'https://developer.sosinventory.com/apidoc/references#orderstage',
 		sosHelpUrl: 'https://help.sosinventory.com/v8-order-stages-and-priorities',
 		fields: [
@@ -3921,12 +4622,55 @@ exports.tables = [
 	},
 	{
 		name: 'paymentMethods',
+		sosObject: 'Payment method',
 		description: 'Configured payment method types.',
 		reference: true,
-		api: 'paymentmethod',
-		supportsFromTo: false,
-		supportsCreatedSinceUpdatedSince: false,
-		sosObject: 'Payment method',
+		api: {
+			query: {
+				endpoint: '/api/v2/paymentmethod',
+				description: 'Returns a list of paymentmethod objects.',
+				method: 'GET',
+				results: [
+					{
+						name: 'count',
+						description: 'The number of results returned in this query.',
+						type: 'integer'
+					},
+					{
+						name: 'totalCount',
+						description: 'The total number of records that match the filters of this query.',
+						type: 'integer'
+					},
+					{
+						name: 'data',
+						description: 'An array of invoice objects.',
+						type: 'array'
+					},
+					{
+						name: 'status',
+						description: 'The status of the query. Will be “ok” if successful, otherwise this matches with the message field to indicate why the call failed.',
+						type: 'string'
+					},
+					{
+						name: 'message',
+						description: 'A descriptive message indicating why the query was unsuccessful.',
+						type: 'string'
+					}
+				],
+				arguments: [
+					{
+						name: 'start',
+						description: 'A cursor used in pagination. This is the row number of the full set of results. The API limits results to a max of 200 results per call. If you want to retrieve the next set of results you can use this parameter to retrive the next set of results. For example if you are retrieving 200 results at a time, you can set start=201 to retrieve the next page of results.',
+						type: 'integer'
+					},
+					{
+						name: 'maxresults',
+						description: 'The maximum number of results you want to return. The default is 200, the maximum value allowed.',
+						type: 'integer'
+					}
+				]
+			}
+		},
 		sosApiUrl: 'https://developer.sosinventory.com/apidoc/references#paymentmethod',
 		sosHelpUrl: 'https://help.sosinventory.com/v8-payment-methods-and-terms',
 		fields: [
@@ -3958,7 +4702,7 @@ exports.tables = [
 	{
 		name: 'pickTickets',
 		description: 'A pick ticket gives instructions to your warehouse to pull certain items, quantities, serial numbers, lot numbers, etc. Pick tickets do NOT remove items from inventory.',
-		primary: false,
+		primary: true,
 		api: {
 			query: {
 				endpoint: '/api/v2/pickticket',
@@ -4183,7 +4927,9 @@ exports.tables = [
 							description: 'The unique identifier for this line item. ID field is ignored on create requests.',
 							type: 'integer',
 							source: 'object',
-							property: 'id'
+							property: 'id',
+							nulls: false,
+							unique: true
 						},
 						{
 							name: 'linenumber',
@@ -4302,12 +5048,55 @@ exports.tables = [
 	},
 	{
 		name: 'priceTiers',
+		sosObject: 'Price tier',
 		description: 'The configured price tiers. Available on Plus and Pro plans.',
 		reference: true,
-		api: 'pricetier',
-		supportsFromTo: false,
-		supportsCreatedSinceUpdatedSince: false,
-		sosObject: 'Price tier',
+		api: {
+			query: {
+				endpoint: '/api/v2/pricetier',
+				description: 'Returns a list of pricetier objects.',
+				method: 'GET',
+				results: [
+					{
+						name: 'count',
+						description: 'The number of results returned in this query.',
+						type: 'integer'
+					},
+					{
+						name: 'totalCount',
+						description: 'The total number of records that match the filters of this query.',
+						type: 'integer'
+					},
+					{
+						name: 'data',
+						description: 'An array of invoice objects.',
+						type: 'array'
+					},
+					{
+						name: 'status',
+						description: 'The status of the query. Will be “ok” if successful, otherwise this matches with the message field to indicate why the call failed.',
+						type: 'string'
+					},
+					{
+						name: 'message',
+						description: 'A descriptive message indicating why the query was unsuccessful.',
+						type: 'string'
+					}
+				],
+				arguments: [
+					{
+						name: 'start',
+						description: 'A cursor used in pagination. This is the row number of the full set of results. The API limits results to a max of 200 results per call. If you want to retrieve the next set of results you can use this parameter to retrive the next set of results. For example if you are retrieving 200 results at a time, you can set start=201 to retrieve the next page of results.',
+						type: 'integer'
+					},
+					{
+						name: 'maxresults',
+						description: 'The maximum number of results you want to return. The default is 200, the maximum value allowed.',
+						type: 'integer'
+					}
+				]
+			}
+		},
 		sosApiUrl: 'https://developer.sosinventory.com/apidoc/references#pricetier',
 		sosHelpUrl: 'https://help.sosinventory.com/v8-price-tiers-price-groups',
 		fields: [
@@ -4343,12 +5132,55 @@ exports.tables = [
 	},
 	{
 		name: 'priorities',
+		sosObject: 'Priority',
 		description: 'The configured priority states.',
 		reference: true,
-		api: 'priority',
-		supportsFromTo: false,
-		supportsCreatedSinceUpdatedSince: false,
-		sosObject: 'Priority',
+		api: {
+			query: {
+				endpoint: '/api/v2/priority',
+				description: 'Returns a list of priority objects.',
+				method: 'GET',
+				results: [
+					{
+						name: 'count',
+						description: 'The number of results returned in this query.',
+						type: 'integer'
+					},
+					{
+						name: 'totalCount',
+						description: 'The total number of records that match the filters of this query.',
+						type: 'integer'
+					},
+					{
+						name: 'data',
+						description: 'An array of invoice objects.',
+						type: 'array'
+					},
+					{
+						name: 'status',
+						description: 'The status of the query. Will be “ok” if successful, otherwise this matches with the message field to indicate why the call failed.',
+						type: 'string'
+					},
+					{
+						name: 'message',
+						description: 'A descriptive message indicating why the query was unsuccessful.',
+						type: 'string'
+					}
+				],
+				arguments: [
+					{
+						name: 'start',
+						description: 'A cursor used in pagination. This is the row number of the full set of results. The API limits results to a max of 200 results per call. If you want to retrieve the next set of results you can use this parameter to retrive the next set of results. For example if you are retrieving 200 results at a time, you can set start=201 to retrieve the next page of results.',
+						type: 'integer'
+					},
+					{
+						name: 'maxresults',
+						description: 'The maximum number of results you want to return. The default is 200, the maximum value allowed.',
+						type: 'integer'
+					}
+				]
+			}
+		},
 		sosApiUrl: 'https://developer.sosinventory.com/apidoc/references#priority',
 		sosHelpUrl: 'https://help.sosinventory.com/v8-order-stages-and-priorities',
 		fields: [
@@ -4381,7 +5213,7 @@ exports.tables = [
 		name: 'processes',
 		sosObject: 'Process',
 		description: 'Processes in SOS Inventory can have an unlimited number of inputs and outputs. This gives you the flexibility to handle not only simple manufacturing (multiple inputs into one output) but also disassembly (where one input produces many outputs) and processes with by-products (multiple inputs into multiple outputs).',
-		primary: false,
+		primary: true,
 		api: {
 			query: {
 				endpoint: '/api/v2/process',
@@ -4589,7 +5421,9 @@ exports.tables = [
 							description: 'The unique identifier for this line item. ID field is ignored on create requests.',
 							type: 'integer',
 							source: 'object',
-							property: 'id'
+							property: 'id',
+							nulls: false,
+							unique: true
 						},
 						{
 							name: 'linenumber',
@@ -4762,7 +5596,9 @@ exports.tables = [
 							description: 'The unique identifier for this line item. ID field is ignored on create requests.',
 							type: 'integer',
 							source: 'object',
-							property: 'id'
+							property: 'id',
+							nulls: false,
+							unique: true
 						},
 						{
 							name: 'linenumber',
@@ -5226,7 +6062,9 @@ exports.tables = [
 							description: 'The unique identifier for this purchase order line item. ID field is ignored on create requests.',
 							type: 'integer',
 							source: 'object',
-							property: 'id'
+							property: 'id',
+							nulls: false,
+							unique: true
 						},
 						{
 							name: 'linenumber',
@@ -5534,111 +6372,237 @@ exports.tables = [
 	},
 	{
 		name: 'rentals',
+		sosObject: 'Rental',
+		description: 'Rental transactions record the renting of an inventory item by a customer.',
+		primary: true,
+		api: {
+			query: {
+				endpoint: '/api/v2/rental',
+				description: 'Returns a list of rental objects.',
+				method: 'GET',
+				results: [
+					{
+						name: 'count',
+						description: 'The number of results returned in this query.',
+						type: 'integer'
+					},
+					{
+						name: 'totalCount',
+						description: 'The total number of records that match the filters of this query.',
+						type: 'integer'
+					},
+					{
+						name: 'data',
+						description: 'An array of invoice objects.',
+						type: 'array'
+					},
+					{
+						name: 'status',
+						description: 'The status of the query. Will be “ok” if successful, otherwise this matches with the message field to indicate why the call failed.',
+						type: 'string'
+					},
+					{
+						name: 'message',
+						description: 'A descriptive message indicating why the query was unsuccessful.',
+						type: 'string'
+					}
+				],
+				arguments: [
+					{
+						name: 'start',
+						description: 'A cursor used in pagination. This is the row number of the full set of results. The API limits results to a max of 200 results per call. If you want to retrieve the next set of results you can use this parameter to retrive the next set of results. For example if you are retrieving 200 results at a time, you can set start=201 to retrieve the next page of results.',
+						type: 'integer'
+					},
+					{
+						name: 'maxresults',
+						description: 'The maximum number of results you want to return. The default is 200, the maximum value allowed.',
+						type: 'integer'
+					},
+					{
+						name: 'status',
+						description: 'Filters results by whether transaction is open or closed.',
+						type: 'string'
+					},
+					{
+						name: 'query',
+						description: 'This parameter will filter the results by matches of the string on the following fields: number, comment, or customer name.',
+						type: 'string'
+					},
+					{
+						name: 'archived',
+						description: 'A "yes" returns archived records only; a "no" returns only those that have not been archived.',
+						type: 'string'
+					},
+					{
+						name: 'summary',
+						description: 'If this parameter is present (the value doesn\'t matter, and doesn\'t need to be specified), only the summary attributes of the estimate will be returned.',
+						type: 'string'
+					},
+					{
+						name: 'from/to',
+						description: 'Returns records based on the beginning and ending transaction dates specified. Both parameters are optional. Using only one parameter allows filtering in one direction. Example: from=2019-09-01T00:00:00&to=2019-09-10T00:00:00',
+						type: 'timestamp'
+					},
+					{
+						name: 'fromLocation',
+						description: 'Filters rental records according to the name of the originating location.',
+						type: 'string'
+					},
+					{
+						name: 'toLocation',
+						description: 'Filters rental records according to the name of the destination location.',
+						type: 'string'
+					},
+					{
+						name: 'createdsince/updatedsince',
+						description: 'Filters transactions created or updated since a specified date/time.',
+						type: 'timestamp'
+					}
+				]
+			}
+		},
+		sosApiUrl: 'https://developer.sosinventory.com/apidoc/Rental',
+		sosHelpUrl: 'https://help.sosinventory.com/v8-rentals-and-the-rentals-list',
 		fields: [
 			{
 				name: 'id',
+				description: 'Unique identifier for this record. ID field is ignored on create requests.',
 				type: 'integer',
 				nulls: false,
 				unique: true
 			},
 			{
 				name: 'starred',
+				description: 'Indicates if this transaction has been starred. A value of 0 = no star; 1 or 1-3 = starred. Star colors depend on application configuration. This could be one color of star or three colors of stars. See Company Settings in the user guide for more details.',
 				type: 'integer'
 			},
 			{
 				name: 'syncToken',
+				description: 'Indicates the current version of this record. If you receive an error when updating a record, it is because your syncToken is for an older version of the record than that which is currently in the database. Please GET the latest version prior to updating.',
 				type: 'integer'
 			},
 			{
 				name: 'number',
+				description: 'The order number for this record. If you wish to use the automatic numbering capability on creation of a sales order, pass the string “auto”.',
 				type: 'string'
 			},
 			{
 				name: 'date',
-				type: 'string'
+				description: 'Transaction date.',
+				type: 'timestamp'
 			},
 			{
 				name: 'customer',
-				type: 'string'
+				description: 'Customer for this transaction.',
+				type: 'reference',
+				reference: { field: 'customerId', property: 'id', sourceTable: 'customers', sourceField: 'id' }
 			},
 			{
 				name: 'fromLocation',
-				type: 'string'
+				description: 'The name of the originating location.',
+				type: 'reference',
+				reference: { field: 'fromLocationId', property: 'id', sourceTable: 'locations', sourceField: 'id' }
 			},
 			{
 				name: 'toLocation',
-				type: 'string'
+				description: 'The name of the return destination.',
+				type: 'reference',
+				reference: { field: 'toLocationId', property: 'id', sourceTable: 'locations', sourceField: 'id' }
 			},
 			{
 				name: 'billing',
-				type: 'string'
+				description: 'Billing address.',
+				type: 'object',
+				objectType: sosObjects.transactionAddress
 			},
 			{
 				name: 'shipping',
-				type: 'string'
+				description: 'Shipping address.',
+				type: 'object',
+				objectType: sosObjects.transactionAddress
 			},
 			{
 				name: 'terms',
-				type: 'string'
+				description: 'Payment terms.',
+				type: 'reference',
+				reference: { field: 'termsId', property: 'id', sourceTable: 'terms', sourceField: 'id' }
 			},
 			{
 				name: 'salesRep',
-				type: 'string'
+				description: 'Sales representative for this transaction.',
+				type: 'reference',
+				reference: { field: 'salesRepId', property: 'id', sourceTable: 'salesReps', sourceField: 'id' }
 			},
 			{
 				name: 'channel',
-				type: 'string'
+				description: 'Channel (e.g., Catalog, Retail Store) for this transaction.',
+				type: 'reference',
+				reference: { field: 'channelId', property: 'id', sourceTable: 'channels', sourceField: 'id' }
 			},
 			{
 				name: 'department',
-				type: 'string'
+				description: 'Department for this transaction.',
+				type: 'reference',
+				reference: { field: 'departmentId', property: 'id', sourceTable: 'departments', sourceField: 'id' }
 			},
 			{
 				name: 'priority',
-				type: 'string'
+				description: 'The degree of importance or urgency assigned to this transaction.',
+				type: 'reference',
+				reference: { field: 'priorityId', property: 'id', sourceTable: 'priorities', sourceField: 'id' }
 			},
 			{
 				name: 'assignedToUser',
-				type: 'string'
+				description: 'User this transaction is assigned to.',
+				type: 'reference',
+				reference: { field: 'assignedToUserId', property: 'id', sourceTable: 'users', sourceField: 'id' }
 			},
 			{
 				name: 'orderStage',
-				type: 'string'
+				description: 'The order stage of this transaction.',
+				type: 'reference',
+				reference: { field: 'orderStageId', property: 'id', sourceTable: 'orderStages', sourceField: 'id' }
 			},
 			{
 				name: 'taxCode',
-				type: 'string'
+				description: 'Tax code for transaction.',
+				type: 'reference',
+				reference: { field: 'taxCodeId', property: 'id', sourceTable: 'taxCodes', sourceField: 'id' }
 			},
 			{
 				name: 'currency',
-				type: 'string'
-			},
-			{
-				name: 'shippingMethod',
-				type: 'string'
+				description: 'Currency used for transaction if multicurrency is enabled',
+				type: 'reference'
 			},
 			{
 				name: 'linkedTransaction',
-				type: 'string'
+				description: 'The transaction linked to this rental.',
+				type: 'object',
+				objectType: sosObjects.transaction
 			},
 			{
 				name: 'exchangeRate',
+				description: 'The exchange rate used for this transaction, if multicurrency is enabled.',
 				type: 'decimal'
 			},
 			{
 				name: 'customerMessage',
+				description: 'Customer message field.',
 				type: 'string'
 			},
 			{
 				name: 'statusMessage',
+				description: 'Status message field.',
 				type: 'string'
 			},
 			{
 				name: 'comment',
+				description: 'The company’s internal comment about this transaction. This comment is not visible to the customer.',
 				type: 'string'
 			},
 			{
 				name: 'customerNotes',
+				description: 'Field for internal notes about customer.',
 				type: 'string'
 			},
 			{
@@ -5649,115 +6613,341 @@ exports.tables = [
 			},
 			{
 				name: 'customerPO',
+				description: 'Customer purchase order field.',
 				type: 'string'
 			},
 			{
 				name: 'depositAmount',
+				description: 'Deposit amount field.',
 				type: 'decimal'
 			},
 			{
 				name: 'subTotal',
-				type: 'decimal'
+				description: 'Subtotal for transaction.',
+				type: 'decimal',
+				readOnly: true
 			},
 			{
 				name: 'discountPercent',
+				description: 'Discount percentage field.',
 				type: 'decimal'
 			},
 			{
 				name: 'discountAmount',
+				description: 'Discount amount field.',
 				type: 'decimal'
 			},
 			{
 				name: 'taxAmount',
+				description: 'Tax amount field.',
 				type: 'decimal'
 			},
 			{
 				name: 'shippingAmount',
+				description: 'Shipping amount field.',
 				type: 'decimal'
 			},
 			{
 				name: 'total',
-				type: 'decimal'
+				description: 'Transaction total.',
+				type: 'decimal',
+				readOnly: true
 			},
 			{
 				name: 'discountTaxable',
-				type: 'integer'
+				description: 'True if discount is taxable, false if not.',
+				type: 'boolean'
 			},
 			{
 				name: 'shippingTaxable',
-				type: 'integer'
+				description: 'True if shipping is taxable, false if not.',
+				type: 'boolean'
 			},
 			{
 				name: 'dropShip',
-				type: 'integer'
+				description: 'True if order is to be drop shipped, false if not.',
+				type: 'boolean'
 			},
 			{
 				name: 'closed',
-				type: 'integer'
+				description: 'True if transaction is closed, false if not.',
+				type: 'boolean',
+				readOnly: true
 			},
 			{
 				name: 'archived',
-				type: 'integer'
+				description: 'True if item is archived, false if not.',
+				type: 'boolean',
+				readOnly: true
 			},
 			{
 				name: 'summaryOnly',
-				type: 'integer'
+				description: 'Indicates if the summary parameter was set when retrieving back this record.',
+				type: 'boolean',
+				readOnly: true
 			},
 			{
 				name: 'hasSignature',
-				type: 'integer'
+				description: 'Reserved for future use.',
+				type: 'boolean',
+				readOnly: true
 			},
 			{
 				name: 'statusLink',
-				type: 'string'
+				description: 'Link to OrderFacts page for this transaction, if enabled.',
+				type: 'string',
+				readOnly: true
 			},
 			{
 				name: 'lines',
-				type: 'string'
-			},
-			{
-				name: 'customerId',
-				type: 'integer'
-			},
-			{
-				name: 'fromLocationId',
-				type: 'integer'
-			},
-			{
-				name: 'toLocationId',
-				type: 'integer'
-			},
-			{
-				name: 'termsId',
-				type: 'integer'
-			},
-			{
-				name: 'salesRepId',
-				type: 'integer'
-			},
-			{
-				name: 'channelId',
-				type: 'integer'
-			},
-			{
-				name: 'departmentId',
-				type: 'integer'
-			},
-			{
-				name: 'priorityId',
-				type: 'integer'
-			},
-			{
-				name: 'assignedToUserId',
-				type: 'integer'
-			},
-			{
-				name: 'taxCodeId',
-				type: 'integer'
-			},
-			{
-				name: 'shippingMethodId',
-				type: 'integer'
+				description: 'The lines for the rental. See object structure below.',
+				type: 'array',
+				sidecar: {
+					table: 'rentalItems',
+					fields: [
+						{
+							name: 'id',
+							description: 'The unique identifier for this rental line item. ID field is ignored on create requests.',
+							type: 'integer',
+							source: 'object',
+							property: 'id',
+							nulls: false,
+							unique: true
+						},
+						{
+							name: 'linenumber',
+							description: 'The line number for this line on the rental transaction.',
+							type: 'integer',
+							source: 'object',
+							property: 'linenumber'
+						},
+						{
+							name: 'item',
+							description: 'The item this line represents.',
+							type: 'reference',
+							reference: { field: 'itemId', property: 'id', sourceTable: 'items', sourceField: 'id' },
+							source: 'object',
+							property: 'item'
+						},
+						{
+							name: 'class',
+							description: 'The class for this line.',
+							type: 'reference',
+							reference: { field: 'classId', property: 'id', sourceTable: 'classes', sourceField: 'id' },
+							source: 'object',
+							property: 'class'
+						},
+						{
+							name: 'job',
+							description: 'The job for this line, if enabled.',
+							type: 'reference',
+							reference: { field: 'jobId', property: 'id', sourceTable: 'jobs', sourceField: 'id' },
+							source: 'object',
+							property: 'job'
+						},
+						{
+							name: 'workcenter',
+							description: 'The related work center for the job.',
+							type: 'reference',
+							reference: { field: 'workCenterId', property: 'id', sourceTable: 'workCenters', sourceField: 'id' },
+							source: 'object',
+							property: 'workcenter'
+						},
+						{
+							name: 'tax',
+							description: 'The tax information for this line, if enabled.',
+							type: 'object',
+							objectTypes: sosObjects.taxInformation,
+							source: 'object',
+							property: 'tax'
+						},
+						{
+							name: 'linkedTransaction',
+							description: 'The transaction linked to this line.',
+							type: 'object',
+							objectTypes: sosObjects.transaction,
+							source: 'object',
+							property: 'linkedTransaction'
+						},
+						{
+							name: 'description',
+							description: 'The item description.',
+							type: 'string',
+							source: 'object',
+							property: 'description'
+						},
+						{
+							name: 'quantity',
+							description: 'The quantity for this line.',
+							type: 'decimal',
+							source: 'object',
+							property: 'quantity'
+						},
+						{
+							name: 'weight',
+							description: 'The weight of this line.',
+							type: 'decimal',
+							source: 'object',
+							property: 'weight',
+							readOnly: true
+						},
+						{
+							name: 'volume',
+							description: 'The volume of this line.',
+							type: 'decimal',
+							source: 'object',
+							property: 'volume',
+							readOnly: true
+						},
+						{
+							name: 'weightunit',
+							description: 'The unit for the item\'s weight value.',
+							type: 'string',
+							source: 'object',
+							property: 'weightunit',
+							readOnly: true
+						},
+						{
+							name: 'volumeunit',
+							description: 'The unit for the volume value.',
+							type: 'string',
+							source: 'object',
+							property: 'volumeunit',
+							readOnly: true
+						},
+						{
+							name: 'unitPrice',
+							description: 'The per-unit purchase cost for the item.',
+							type: 'decimal',
+							source: 'object',
+							property: 'unitPrice'
+						},
+						{
+							name: 'amount',
+							description: 'The rental amount for this line. The amount must equal the quantity multiplied by the unit price.',
+							type: 'decimal',
+							source: 'object',
+							property: 'amount'
+						},
+						{
+							name: 'altAmount',
+							description: 'Unused.',
+							type: 'decimal',
+							source: 'object',
+							property: 'altAmount'
+						},
+						{
+							name: 'picked',
+							description: 'The number of items picked on this line.',
+							type: 'decimal',
+							source: 'object',
+							property: 'picked'
+						},
+						{
+							name: 'shipped',
+							description: 'The number of items shipped on this line.',
+							type: 'decimal',
+							source: 'object',
+							property: 'shipped'
+						},
+						{
+							name: 'invoiced',
+							description: 'the number of items invoiced on this line',
+							type: 'decimal',
+							source: 'object',
+							property: 'invoiced'
+						},
+						{
+							name: 'produced',
+							description: 'Unused.',
+							type: 'decimal',
+							source: 'object',
+							property: 'produced'
+						},
+						{
+							name: 'returned',
+							description: 'The number of items picked on this line.',
+							type: 'decimal',
+							source: 'object',
+							property: 'returned'
+						},
+						{
+							name: 'cost',
+							description: 'The cost for this line.',
+							type: 'decimal',
+							source: 'object',
+							property: 'cost'
+						},
+						{
+							name: 'margin',
+							description: 'The margin for this line.',
+							type: 'decimal',
+							source: 'object',
+							property: 'margin'
+						},
+						{
+							name: 'listPrice',
+							description: 'The list price for this item.',
+							type: 'decimal',
+							source: 'object',
+							property: 'listPrice'
+						},
+						{
+							name: 'percentDiscount',
+							description: 'The discount percentage applied to this line.',
+							type: 'decimal',
+							source: 'object',
+							property: 'percentDiscount'
+						},
+						{
+							name: 'dueDate',
+							description: 'The due date for this line.',
+							type: 'timestamp',
+							source: 'object',
+							property: 'dueDate'
+						},
+						{
+							name: 'uom',
+							description: 'The unit of measure for this line.',
+							type: 'reference',
+							reference: { field: 'unitsOfMeasureId', property: 'id', sourceTable: 'unitsOfMeasure', sourceField: 'id' },
+							source: 'object',
+							property: 'uom'
+						},
+						{
+							name: 'bin',
+							description: 'Bin from which this item was shipped.',
+							type: 'reference',
+							reference: { field: 'binId', property: 'id', sourceTable: 'bins', sourceField: 'id' },
+							source: 'object',
+							property: 'bin'
+						},
+						{
+							name: 'lot',
+							description: 'The lot used for this item process.',
+							type: 'reference',
+							reference: { field: 'lotId', property: 'id', sourceTable: 'lots', sourceField: 'id' },
+							source: 'object',
+							property: 'lot'
+						},
+						{
+							name: 'serials',
+							description: 'The serial numbers used for this item process.',
+							type: 'array',
+							source: 'object',
+							property: 'serials'
+						},
+						{
+							name: 'toBin',
+							description: 'Bin to which this item was returned.',
+							type: 'reference',
+							reference: { field: 'toBinId', property: 'id', sourceTable: 'bins', sourceField: 'id' },
+							source: 'object',
+							property: 'toBin'
+						}
+					],
+					primaryKey: ['id']
+				}
 			}
 		],
 		primaryKey: ['id']
@@ -6654,12 +7844,55 @@ exports.tables = [
 	},
 	{
 		name: 'salesReps',
+		sosObject: 'Sales rep',
 		description: 'The configured sales reps for this account.',
 		reference: true,
-		api: 'salesrep',
-		supportsFromTo: false,
-		supportsCreatedSinceUpdatedSince: false,
-		sosObject: 'Sales rep',
+		api: {
+			query: {
+				endpoint: '/api/v2/salesrep',
+				description: 'Returns a list of salesrep objects.',
+				method: 'GET',
+				results: [
+					{
+						name: 'count',
+						description: 'The number of results returned in this query.',
+						type: 'integer'
+					},
+					{
+						name: 'totalCount',
+						description: 'The total number of records that match the filters of this query.',
+						type: 'integer'
+					},
+					{
+						name: 'data',
+						description: 'An array of invoice objects.',
+						type: 'array'
+					},
+					{
+						name: 'status',
+						description: 'The status of the query. Will be “ok” if successful, otherwise this matches with the message field to indicate why the call failed.',
+						type: 'string'
+					},
+					{
+						name: 'message',
+						description: 'A descriptive message indicating why the query was unsuccessful.',
+						type: 'string'
+					}
+				],
+				arguments: [
+					{
+						name: 'start',
+						description: 'A cursor used in pagination. This is the row number of the full set of results. The API limits results to a max of 200 results per call. If you want to retrieve the next set of results you can use this parameter to retrive the next set of results. For example if you are retrieving 200 results at a time, you can set start=201 to retrieve the next page of results.',
+						type: 'integer'
+					},
+					{
+						name: 'maxresults',
+						description: 'The maximum number of results you want to return. The default is 200, the maximum value allowed.',
+						type: 'integer'
+					}
+				]
+			}
+		},
 		sosApiUrl: 'https://developer.sosinventory.com/apidoc/references#salesrep',
 		sosHelpUrl: 'https://help.sosinventory.com/v8-sales-reps',
 		fields: [
@@ -6955,12 +8188,55 @@ exports.tables = [
 	},
 	{
 		name: 'shipMethods',
+		sosObject: 'Ship method',
 		description: 'The configured shipment methods for this account.',
 		reference: true,
-		api: 'shipmethod',
-		supportsFromTo: false,
-		supportsCreatedSinceUpdatedSince: false,
-		sosObject: 'Ship method',
+		api: {
+			query: {
+				endpoint: '/api/v2/shipmethod',
+				description: 'Returns a list of shipmethod objects.',
+				method: 'GET',
+				results: [
+					{
+						name: 'count',
+						description: 'The number of results returned in this query.',
+						type: 'integer'
+					},
+					{
+						name: 'totalCount',
+						description: 'The total number of records that match the filters of this query.',
+						type: 'integer'
+					},
+					{
+						name: 'data',
+						description: 'An array of invoice objects.',
+						type: 'array'
+					},
+					{
+						name: 'status',
+						description: 'The status of the query. Will be “ok” if successful, otherwise this matches with the message field to indicate why the call failed.',
+						type: 'string'
+					},
+					{
+						name: 'message',
+						description: 'A descriptive message indicating why the query was unsuccessful.',
+						type: 'string'
+					}
+				],
+				arguments: [
+					{
+						name: 'start',
+						description: 'A cursor used in pagination. This is the row number of the full set of results. The API limits results to a max of 200 results per call. If you want to retrieve the next set of results you can use this parameter to retrive the next set of results. For example if you are retrieving 200 results at a time, you can set start=201 to retrieve the next page of results.',
+						type: 'integer'
+					},
+					{
+						name: 'maxresults',
+						description: 'The maximum number of results you want to return. The default is 200, the maximum value allowed.',
+						type: 'integer'
+					}
+				]
+			}
+		},
 		sosApiUrl: 'https://developer.sosinventory.com/apidoc/references#shipmethod',
 		sosHelpUrl: 'https://help.sosinventory.com/v8-shipping-methods',
 		fields: [
@@ -7007,12 +8283,55 @@ exports.tables = [
 	},
 	{
 		name: 'taxCodes',
+		sosObject: 'Tax code',
 		description: 'This represents the details of a tax code.',
 		reference: true,
-		api: 'taxcode',
-		supportsFromTo: false,
-		supportsCreatedSinceUpdatedSince: false,
-		sosObject: 'Tax code',
+		api: {
+			query: {
+				endpoint: '/api/v2/taxcode',
+				description: 'Returns a list of taxcode objects.',
+				method: 'GET',
+				results: [
+					{
+						name: 'count',
+						description: 'The number of results returned in this query.',
+						type: 'integer'
+					},
+					{
+						name: 'totalCount',
+						description: 'The total number of records that match the filters of this query.',
+						type: 'integer'
+					},
+					{
+						name: 'data',
+						description: 'An array of invoice objects.',
+						type: 'array'
+					},
+					{
+						name: 'status',
+						description: 'The status of the query. Will be “ok” if successful, otherwise this matches with the message field to indicate why the call failed.',
+						type: 'string'
+					},
+					{
+						name: 'message',
+						description: 'A descriptive message indicating why the query was unsuccessful.',
+						type: 'string'
+					}
+				],
+				arguments: [
+					{
+						name: 'start',
+						description: 'A cursor used in pagination. This is the row number of the full set of results. The API limits results to a max of 200 results per call. If you want to retrieve the next set of results you can use this parameter to retrive the next set of results. For example if you are retrieving 200 results at a time, you can set start=201 to retrieve the next page of results.',
+						type: 'integer'
+					},
+					{
+						name: 'maxresults',
+						description: 'The maximum number of results you want to return. The default is 200, the maximum value allowed.',
+						type: 'integer'
+					}
+				]
+			}
+		},
 		sosApiUrl: 'https://developer.sosinventory.com/apidoc/references#taxcode',
 		sosHelpUrl: 'https://help.sosinventory.com/v8-discounts-deposits-and-taxes',
 		fields: [
@@ -7063,12 +8382,55 @@ exports.tables = [
 	},
 	{
 		name: 'terms',
+		sosObject: 'Terms',
 		description: 'The configured payment terms for this account.',
 		reference: true,
-		api: 'terms',
-		supportsFromTo: false,
-		supportsCreatedSinceUpdatedSince: false,
-		sosObject: 'Terms',
+		api: {
+			query: {
+				endpoint: '/api/v2/terms',
+				description: 'Returns a list of terms objects.',
+				method: 'GET',
+				results: [
+					{
+						name: 'count',
+						description: 'The number of results returned in this query.',
+						type: 'integer'
+					},
+					{
+						name: 'totalCount',
+						description: 'The total number of records that match the filters of this query.',
+						type: 'integer'
+					},
+					{
+						name: 'data',
+						description: 'An array of invoice objects.',
+						type: 'array'
+					},
+					{
+						name: 'status',
+						description: 'The status of the query. Will be “ok” if successful, otherwise this matches with the message field to indicate why the call failed.',
+						type: 'string'
+					},
+					{
+						name: 'message',
+						description: 'A descriptive message indicating why the query was unsuccessful.',
+						type: 'string'
+					}
+				],
+				arguments: [
+					{
+						name: 'start',
+						description: 'A cursor used in pagination. This is the row number of the full set of results. The API limits results to a max of 200 results per call. If you want to retrieve the next set of results you can use this parameter to retrive the next set of results. For example if you are retrieving 200 results at a time, you can set start=201 to retrieve the next page of results.',
+						type: 'integer'
+					},
+					{
+						name: 'maxresults',
+						description: 'The maximum number of results you want to return. The default is 200, the maximum value allowed.',
+						type: 'integer'
+					}
+				]
+			}
+		},
 		sosApiUrl: 'https://developer.sosinventory.com/apidoc/references#terms',
 		sosHelpUrl: 'https://help.sosinventory.com/v8-payment-methods-and-terms',
 		fields: [
@@ -7237,12 +8599,55 @@ exports.tables = [
 	},
 	{
 		name: 'unitsOfMeasure',
+		sosObject: 'Unit of measure',
 		description: 'The configured units of measure for this account. Available on Plus and Pro plans.',
 		reference: true,
-		api: 'uom',
-		supportsFromTo: false,
-		supportsCreatedSinceUpdatedSince: false,
-		sosObject: 'Unit of measure',
+		api: {
+			query: {
+				endpoint: '/api/v2/uom',
+				description: 'Returns a list of uom objects.',
+				method: 'GET',
+				results: [
+					{
+						name: 'count',
+						description: 'The number of results returned in this query.',
+						type: 'integer'
+					},
+					{
+						name: 'totalCount',
+						description: 'The total number of records that match the filters of this query.',
+						type: 'integer'
+					},
+					{
+						name: 'data',
+						description: 'An array of invoice objects.',
+						type: 'array'
+					},
+					{
+						name: 'status',
+						description: 'The status of the query. Will be “ok” if successful, otherwise this matches with the message field to indicate why the call failed.',
+						type: 'string'
+					},
+					{
+						name: 'message',
+						description: 'A descriptive message indicating why the query was unsuccessful.',
+						type: 'string'
+					}
+				],
+				arguments: [
+					{
+						name: 'start',
+						description: 'A cursor used in pagination. This is the row number of the full set of results. The API limits results to a max of 200 results per call. If you want to retrieve the next set of results you can use this parameter to retrive the next set of results. For example if you are retrieving 200 results at a time, you can set start=201 to retrieve the next page of results.',
+						type: 'integer'
+					},
+					{
+						name: 'maxresults',
+						description: 'The maximum number of results you want to return. The default is 200, the maximum value allowed.',
+						type: 'integer'
+					}
+				]
+			}
+		},
 		sosApiUrl: 'https://developer.sosinventory.com/apidoc/references#uom',
 		sosHelpUrl: 'https://help.sosinventory.com/v8-units-of-measure-uoms',
 		fields: [
@@ -7273,12 +8678,55 @@ exports.tables = [
 	},
 	{
 		name: 'users',
+		sosObject: 'User',
 		description: 'The users that are configured for this account.',
 		reference: true,
-		api: 'user',
-		supportsFromTo: false,
-		supportsCreatedSinceUpdatedSince: false,
-		sosObject: 'User',
+		api: {
+			query: {
+				endpoint: '/api/v2/user',
+				description: 'Returns a list of user objects.',
+				method: 'GET',
+				results: [
+					{
+						name: 'count',
+						description: 'The number of results returned in this query.',
+						type: 'integer'
+					},
+					{
+						name: 'totalCount',
+						description: 'The total number of records that match the filters of this query.',
+						type: 'integer'
+					},
+					{
+						name: 'data',
+						description: 'An array of invoice objects.',
+						type: 'array'
+					},
+					{
+						name: 'status',
+						description: 'The status of the query. Will be “ok” if successful, otherwise this matches with the message field to indicate why the call failed.',
+						type: 'string'
+					},
+					{
+						name: 'message',
+						description: 'A descriptive message indicating why the query was unsuccessful.',
+						type: 'string'
+					}
+				],
+				arguments: [
+					{
+						name: 'start',
+						description: 'A cursor used in pagination. This is the row number of the full set of results. The API limits results to a max of 200 results per call. If you want to retrieve the next set of results you can use this parameter to retrive the next set of results. For example if you are retrieving 200 results at a time, you can set start=201 to retrieve the next page of results.',
+						type: 'integer'
+					},
+					{
+						name: 'maxresults',
+						description: 'The maximum number of results you want to return. The default is 200, the maximum value allowed.',
+						type: 'integer'
+					}
+				]
+			}
+		},
 		sosApiUrl: 'https://developer.sosinventory.com/apidoc/references#user',
 		sosHelpUrl: 'https://help.sosinventory.com/v8-user-administration',
 		fields: [
@@ -7452,12 +8900,55 @@ exports.tables = [
 	},
 	{
 		name: 'warranties',
+		sosObject: 'Warranty',
 		description: 'The configured warranty settings for this account. Supported on Plus and Pro plans.',
 		reference: true,
-		api: 'warranty',
-		supportsFromTo: false,
-		supportsCreatedSinceUpdatedSince: false,
-		sosObject: 'Warranty',
+		api: {
+			query: {
+				endpoint: '/api/v2/warranty',
+				description: 'Returns a list of warranty objects.',
+				method: 'GET',
+				results: [
+					{
+						name: 'count',
+						description: 'The number of results returned in this query.',
+						type: 'integer'
+					},
+					{
+						name: 'totalCount',
+						description: 'The total number of records that match the filters of this query.',
+						type: 'integer'
+					},
+					{
+						name: 'data',
+						description: 'An array of invoice objects.',
+						type: 'array'
+					},
+					{
+						name: 'status',
+						description: 'The status of the query. Will be “ok” if successful, otherwise this matches with the message field to indicate why the call failed.',
+						type: 'string'
+					},
+					{
+						name: 'message',
+						description: 'A descriptive message indicating why the query was unsuccessful.',
+						type: 'string'
+					}
+				],
+				arguments: [
+					{
+						name: 'start',
+						description: 'A cursor used in pagination. This is the row number of the full set of results. The API limits results to a max of 200 results per call. If you want to retrieve the next set of results you can use this parameter to retrive the next set of results. For example if you are retrieving 200 results at a time, you can set start=201 to retrieve the next page of results.',
+						type: 'integer'
+					},
+					{
+						name: 'maxresults',
+						description: 'The maximum number of results you want to return. The default is 200, the maximum value allowed.',
+						type: 'integer'
+					}
+				]
+			}
+		},
 		sosApiUrl: 'https://developer.sosinventory.com/apidoc/references#warranty',
 		sosHelpUrl: 'https://help.sosinventory.com/v8-warranties',
 		fields: [
@@ -7498,12 +8989,55 @@ exports.tables = [
 	},
 	{
 		name: 'workCenters',
+		sosObject: 'Work center',
 		description: 'The configured work centers for this account. Available on Pro Plan only.',
 		reference: true,
-		api: 'workcenter',
-		supportsFromTo: false,
-		supportsCreatedSinceUpdatedSince: false,
-		sosObject: 'Work center',
+		api: {
+			query: {
+				endpoint: '/api/v2/workcenter',
+				description: 'Returns a list of workcenter objects.',
+				method: 'GET',
+				results: [
+					{
+						name: 'count',
+						description: 'The number of results returned in this query.',
+						type: 'integer'
+					},
+					{
+						name: 'totalCount',
+						description: 'The total number of records that match the filters of this query.',
+						type: 'integer'
+					},
+					{
+						name: 'data',
+						description: 'An array of invoice objects.',
+						type: 'array'
+					},
+					{
+						name: 'status',
+						description: 'The status of the query. Will be “ok” if successful, otherwise this matches with the message field to indicate why the call failed.',
+						type: 'string'
+					},
+					{
+						name: 'message',
+						description: 'A descriptive message indicating why the query was unsuccessful.',
+						type: 'string'
+					}
+				],
+				arguments: [
+					{
+						name: 'start',
+						description: 'A cursor used in pagination. This is the row number of the full set of results. The API limits results to a max of 200 results per call. If you want to retrieve the next set of results you can use this parameter to retrive the next set of results. For example if you are retrieving 200 results at a time, you can set start=201 to retrieve the next page of results.',
+						type: 'integer'
+					},
+					{
+						name: 'maxresults',
+						description: 'The maximum number of results you want to return. The default is 200, the maximum value allowed.',
+						type: 'integer'
+					}
+				]
+			}
+		},
 		sosApiUrl: 'https://developer.sosinventory.com/apidoc/references#workcenter',
 		sosHelpUrl: 'https://help.sosinventory.com/v8-work-centers',
 		fields: [
@@ -7545,12 +9079,55 @@ exports.tables = [
 	},
 	{
 		name: 'workers',
+		sosObject: 'Worker',
 		description: 'The configured workers for this account. Available on Pro Plan only.',
 		reference: true,
-		api: 'worker',
-		supportsFromTo: false,
-		supportsCreatedSinceUpdatedSince: false,
-		sosObject: 'Worker',
+		api: {
+			query: {
+				endpoint: '/api/v2/worker',
+				description: 'Returns a list of worker objects.',
+				method: 'GET',
+				results: [
+					{
+						name: 'count',
+						description: 'The number of results returned in this query.',
+						type: 'integer'
+					},
+					{
+						name: 'totalCount',
+						description: 'The total number of records that match the filters of this query.',
+						type: 'integer'
+					},
+					{
+						name: 'data',
+						description: 'An array of invoice objects.',
+						type: 'array'
+					},
+					{
+						name: 'status',
+						description: 'The status of the query. Will be “ok” if successful, otherwise this matches with the message field to indicate why the call failed.',
+						type: 'string'
+					},
+					{
+						name: 'message',
+						description: 'A descriptive message indicating why the query was unsuccessful.',
+						type: 'string'
+					}
+				],
+				arguments: [
+					{
+						name: 'start',
+						description: 'A cursor used in pagination. This is the row number of the full set of results. The API limits results to a max of 200 results per call. If you want to retrieve the next set of results you can use this parameter to retrive the next set of results. For example if you are retrieving 200 results at a time, you can set start=201 to retrieve the next page of results.',
+						type: 'integer'
+					},
+					{
+						name: 'maxresults',
+						description: 'The maximum number of results you want to return. The default is 200, the maximum value allowed.',
+						type: 'integer'
+					}
+				]
+			}
+		},
 		sosApiUrl: 'https://developer.sosinventory.com/apidoc/references#worker',
 		sosHelpUrl: 'https://help.sosinventory.com/v8-workers-and-labor',
 		fields: [

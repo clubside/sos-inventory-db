@@ -5,6 +5,16 @@ const createTable = require('./db/create-table.js')
 const insertRow = require('./db/insert-row.js')
 const { tables } = require('./db/definitions.js')
 
+function formatRuntime(ms) {
+	const totalSeconds = Math.floor(ms / 1000)
+	const hours = Math.floor(totalSeconds / 3600)
+	const minutes = Math.floor((totalSeconds % 3600) / 60)
+	const seconds = totalSeconds % 60
+	return `${hours.toString().padStart(2, '0')}:${minutes
+        .toString()
+        .padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`
+}
+
 async function sosApi(url, method, authorization, retries = 5) {
 	console.log(url)
 	for (let attempt = 1; attempt <= retries; attempt++) {
@@ -94,7 +104,7 @@ async function downloadTable(params, engine, table) {
 	return { ok: true }
 }
 
-/* async function handleCategories(engine, table) {
+async function handleCategories(engine, table) {
 	// 1. Create the categories table
 	await createTable(engine, table)
 
@@ -141,6 +151,8 @@ async function downloadTable(params, engine, table) {
 			{ id: item.id }
 		)
 	}
+
+	return { ok: true }
 }
 
 async function handleItemBoms(params, engine, table) {
@@ -151,7 +163,7 @@ async function handleItemBoms(params, engine, table) {
 	const retries = params.retries ?? 5
 
 	for (const item of items) {
-		const result = await sosApi(`https://api.sosinventory.com/api/v2/item/${item.id}/bom`, params.sosAuthorization, retries)
+		const result = await sosApi(`https://api.sosinventory.com/api/v2/item/${item.id}/bom`, 'GET', params.sosAuthorization, retries)
 		// console.log(result)
 
 		if (!result.data) continue
@@ -172,63 +184,105 @@ async function handleItemBoms(params, engine, table) {
 			await insertRow(engine, table, record)
 		}
 	}
-} */
+
+	return { ok: true }
+}
 
 async function downloadSOS(params) {
 	if (!params.database.engine) {
-		return { ok: false, error: new Error('downloadSOS(params) requires params.database.engine') }
+		return {
+			ok: false,
+			message: 'Missing required parameter: params.database.engine',
+			error: new Error('params.database.engine is required'),
+			extra: null
+		}
 	}
 
 	if (!params.sosAuthorization) {
-		return { ok: false, error: new Error('downloadSOS(params) requires params.sosAuthorization') }
+		return {
+			ok: false,
+			message: 'Missing required parameter: params.sosAuthorization',
+			error: new Error('params.sosAuthorization is required'),
+			extra: null
+		}
 	}
+
+	const start = Date.now()
 
 	const engine = await openDb(params.database)
 
-	/* PASS 1 — reference tables (preserve for future)
+	// PASS 1 — reference tables
 	const referenceTables = tables.filter(table => table.reference === true)
 	for (const table of referenceTables) {
 		const result = await downloadTable(params, engine, table)
 		if (!result.ok) {
 			if (engine.close) await engine.close()
-			return result
+			return {
+				ok: false,
+				message: `downloadTable failed for ${table.name}`,
+				error: result.error || new Error('Unknown downloadTable error'),
+				extra: { table: table.name, result }
+			}
 		}
 	}
-	*/
 
+	// PASS 2 - primary tables
 	const primaryTables = tables.filter(table => table.primary === true)
 	for (const table of primaryTables) {
 		const result = await downloadTable(params, engine, table)
 		if (!result.ok) {
 			if (engine.close) await engine.close()
-			return { ok: false, result, message: `Failed on downloadTable for ${table.name}`, downloadMessage: result.message }
+			return {
+				ok: false,
+				message: `downloadTable failed for ${table.name}`,
+				error: result.error || new Error('Unknown downloadTable error'),
+				extra: { table: table.name, result }
+			}
 		}
 	}
 
-	/* PASS 3 — support tables (preserve for future)
+	// PASS 3 — support tables
 	const supportTables = tables.filter(table => table.support === true)
 	for (const table of supportTables) {
 		switch (table.name) {
-			case 'categories':
-				// const catResult = await handleCategories(engine, table)
-				// if (!catResult.ok) {
-				//     if (engine.close) await engine.close()
-				//     return catResult
-				// }
+			case 'categories': {
+				const catResult = await handleCategories(engine, table)
+				if (!catResult.ok) {
+				     if (engine.close) await engine.close()
+					return {
+						ok: false,
+						message: 'handleCategories failed',
+						error: catResult.error || new Error('Unknown category handler error'),
+						extra: { table: table.name, result: catResult }
+					}
+				}
 				break
-			case 'itemBoms':
+			}
+			case 'itemBoms': {
 				const bomResult = await handleItemBoms(params, engine, table)
 				if (!bomResult.ok) {
 					if (engine.close) await engine.close()
-					return bomResult
+					return {
+						ok: false,
+						message: 'handleItemBoms failed',
+						error: bomResult.error || new Error('Unknown item BOM handler error'),
+						extra: { table: table.name, result: bomResult }
+					}
 				}
 				break
+			}
 		}
 	}
-	*/
 
 	if (engine.close) await engine.close()
-	return { ok: true }
+
+	const runtime = formatRuntime(Date.now() - start)
+	return {
+		ok: true,
+		message: 'downloadSOS completed successfully',
+		error: null,
+		extra: { runtime }
+	}
 }
 
 module.exports = downloadSOS
