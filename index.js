@@ -103,7 +103,7 @@ async function downloadTable(params, engine, table) {
 	await engine.commit()
 	return { ok: true }
 }
-
+/*
 async function handleCategories(engine, table) {
 	// 1. Create the categories table
 	await createTable(engine, table)
@@ -187,7 +187,7 @@ async function handleItemBoms(params, engine, table) {
 
 	return { ok: true }
 }
-
+*/
 async function downloadSOS(params) {
 	if (!params.database.engine) {
 		return {
@@ -210,7 +210,7 @@ async function downloadSOS(params) {
 	const start = Date.now()
 
 	const engine = await openDb(params.database)
-
+	/*
 	// PASS 1 — reference tables
 	const referenceTables = tables.filter(table => table.reference === true)
 	for (const table of referenceTables) {
@@ -225,7 +225,7 @@ async function downloadSOS(params) {
 			}
 		}
 	}
-
+	*/
 	// PASS 2 - primary tables
 	const primaryTables = tables.filter(table => table.primary === true)
 	for (const table of primaryTables) {
@@ -240,7 +240,7 @@ async function downloadSOS(params) {
 			}
 		}
 	}
-
+	/*
 	// PASS 3 — support tables
 	const supportTables = tables.filter(table => table.support === true)
 	for (const table of supportTables) {
@@ -273,7 +273,7 @@ async function downloadSOS(params) {
 			}
 		}
 	}
-
+	*/
 	if (engine.close) await engine.close()
 
 	const runtime = formatRuntime(Date.now() - start)
