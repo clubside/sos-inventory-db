@@ -8175,7 +8175,7 @@ exports.tables = [
 		name: 'rmas',
 		sosObject: 'RMA',
 		description: 'An RMA (Return Merchandise Authorization) is a form issued to a customer that permits the return of one or more items.',
-		primary: true,
+		primary: false,
 		api: {
 			query: {
 				endpoint: '/api/v2/rma',
