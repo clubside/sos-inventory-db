@@ -1300,30 +1300,6 @@ exports.tables = [
 		primaryKey: ['id']
 	},
 	{
-		name: 'categories',
-		sosObject: null,
-		description: 'A derived table representing item categories extracted from the Items table. SOS Inventory does not provide a categories API; categories must be reconstructed from item.category JSON.',
-		support: true,
-		api: null,
-		sosApiUrl: null,
-		sosHelpUrl: 'https://help.sosinventory.com/v8-creating-and-using-categories',
-		fields: [
-			{
-				name: 'id',
-				description: 'Unique identifier for this record.',
-				type: 'integer',
-				nulls: false,
-				unique: true
-			},
-			{
-				name: 'name',
-				description: 'The category name.',
-				type: 'string'
-			}
-		],
-		primaryKey: ['id']
-	},
-	{
 		name: 'channels',
 		sosObject: 'Channel',
 		description: 'The sales channels configured for this account.',
@@ -3958,136 +3934,10 @@ exports.tables = [
 		primaryKey: ['id']
 	},
 	{
-		name: 'itemBoms',
-		sosObject: 'BOM',
-		description: 'A derived support table representing Bill of Materials (BOM) lines for items. BOMs are retrieved per item using the item/:id/bom endpoint.',
-		support: true,
-		api: {
-			query: {
-				endpoint: '/api/v2/item/:id/bom',
-				description: 'This returns an array of the Bill of Material for an item, if the item is an assembly or kit.',
-				method: 'GET',
-				results: [
-					{
-						name: 'item',
-						description: 'The item this BOM data represents.',
-						type: 'reference'
-					},
-					{
-						name: 'lines',
-						description: 'The lines for this BOM.',
-						type: 'integer'
-					}
-				],
-				arguments: [
-					{
-						name: 'id',
-						description: 'The id of the item.',
-						type: 'integer'
-					}
-				]
-			}
-		},
-		sosApiUrl: 'https://developer.sosinventory.com/apidoc/Item',
-		sosHelpUrl: 'https://help.sosinventory.com/v8-bulk-editing-boms-bills-of-materials',
-		fields: [
-			{
-				name: 'id',
-				description: 'Unique identifier for this record. ID field is ignored on create requests.',
-				type: 'integer',
-				nulls: false,
-				unique: true
-			},
-			{
-				name: 'itemId',
-				description: 'The parent item ID for this BOM. Added by the ingestion engine because SOS does not include it in the BOM payload.',
-				type: 'integer'
-			},
-			{
-				name: 'lineNumber',
-				description: 'The line number for this line on the BOM.',
-				type: 'integer'
-			},
-			{
-				name: 'componentItem',
-				description: 'A reference to the item for this line on the BOM.',
-				type: 'reference',
-				reference: { field: 'componentItemId', property: 'id', sourceTable: 'items', sourceField: 'id' }
-			},
-			{
-				name: 'description',
-				description: 'The item description.',
-				type: 'string'
-			},
-			{
-				name: 'quantity',
-				description: 'The quantity of this item on the BOM.',
-				type: 'integer'
-			},
-			{
-				name: 'cost',
-				description: 'The cost for this component item.',
-				type: 'decimal'
-			},
-			{
-				name: 'total',
-				description: 'The component item total.',
-				type: 'decimal'
-			},
-			{
-				name: 'typeOfItem',
-				description: 'The kind of item. Must be one of the following: "Inventory Item", "Non-inventory", "Category", "Expense", "Assembly", "Kit", "Service", "Labor", "Overhead", or "Other".',
-				type: 'string'
-			},
-			{
-				name: 'baseWeight',
-				description: 'The base weight for this item',
-				type: 'decimal',
-				readOnly: true
-			},
-			{
-				name: 'weight',
-				description: 'The weight of this item.',
-				type: 'decimal',
-				readOnly: true
-			},
-			{
-				name: 'weightunit',
-				description: 'The unit for the weight value.',
-				type: 'string',
-				readOnly: true
-			},
-			{
-				name: 'baseVolume',
-				description: 'The base volume for this item',
-				type: 'decimal',
-				readOnly: true
-			},
-			{
-				name: 'volume',
-				description: 'The volume of this item.',
-				type: 'decimal',
-				readOnly: true
-			},
-			{
-				name: 'volumeunit',
-				description: 'The unit for the volume value.',
-				type: 'string',
-				readOnly: true
-			},
-			{
-				name: 'notes',
-				description: 'The note for this line on the BOM.',
-				type: 'string'
-			}
-		],
-		primaryKey: ['id']
-	},
-	{
 		name: 'jobs',
 		sosObject: 'Job',
 		description: 'Jobs, available on the Pro Plan of SOS Inventory, provide a convenient way to organize groups of transactions. Each job--and even each stage of a job--can have its own profit-and-loss statement, showing precisely how much money was made or lost on a given set',
-		primary: false,
+		primary: true,
 		api: {
 			query: {
 				endpoint: '/api/v2/job',
@@ -12396,6 +12246,188 @@ exports.tables = [
 					],
 					primaryKey: ['id']
 				}
+			}
+		],
+		primaryKey: ['id']
+	}
+]
+
+/** @type {SOSTable[]} */
+exports.supportTables = [
+	{
+		name: 'categories',
+		sosObject: null,
+		description: 'A derived table representing item categories extracted from the Items table. SOS Inventory does not provide a categories API; categories must be reconstructed from item.category JSON.',
+		api: null,
+		sourceField: 'category',
+		sourceTables: ['items'],
+		destinationField: 'categoryId',
+		sosApiUrl: null,
+		sosHelpUrl: 'https://help.sosinventory.com/v8-creating-and-using-categories',
+		fields: [
+			{
+				name: 'id',
+				description: 'Unique identifier for this record.',
+				type: 'integer',
+				nulls: false,
+				unique: true
+			},
+			{
+				name: 'name',
+				description: 'The category name.',
+				type: 'string'
+			}
+		],
+		primaryKey: ['id']
+	},
+	{
+		name: 'currencies',
+		sosObject: null,
+		description: 'A derived table representing currencies extracted from various tables. SOS Inventory does not provide a currencies API; currencies must be reconstructed from various table currency property JSON.',
+		api: null,
+		sourceField: 'currency',
+		sourceTables: ['customers', 'estimates', 'invoices', 'itemReceipts', 'purchaseOrders', 'rentals', 'returns', 'salesOrders', 'salesReceipts', 'vendors'],
+		destinationField: 'currencyId',
+		sosApiUrl: null,
+		sosHelpUrl: 'https://help.sosinventory.com/v8-multicurrency',
+		fields: [
+			{
+				name: 'id',
+				description: 'Unique identifier for this record.',
+				type: 'integer',
+				nulls: false,
+				unique: true
+			},
+			{
+				name: 'name',
+				description: 'The currency name.',
+				type: 'string'
+			}
+		],
+		primaryKey: ['id']
+	},
+	{
+		name: 'itemBoms',
+		sosObject: 'BOM',
+		description: 'A derived support table representing Bill of Materials (BOM) lines for items. BOMs are retrieved per item using the item/:id/bom endpoint.',
+		support: true,
+		api: {
+			query: {
+				endpoint: '/api/v2/item/:id/bom',
+				description: 'This returns an array of the Bill of Material for an item, if the item is an assembly or kit.',
+				method: 'GET',
+				results: [
+					{
+						name: 'item',
+						description: 'The item this BOM data represents.',
+						type: 'reference'
+					},
+					{
+						name: 'lines',
+						description: 'The lines for this BOM.',
+						type: 'integer'
+					}
+				],
+				arguments: [
+					{
+						name: 'id',
+						description: 'The id of the item.',
+						type: 'integer'
+					}
+				]
+			}
+		},
+		sosApiUrl: 'https://developer.sosinventory.com/apidoc/Item',
+		sosHelpUrl: 'https://help.sosinventory.com/v8-bulk-editing-boms-bills-of-materials',
+		fields: [
+			{
+				name: 'id',
+				description: 'Unique identifier for this record. ID field is ignored on create requests.',
+				type: 'integer',
+				nulls: false,
+				unique: true
+			},
+			{
+				name: 'itemId',
+				description: 'The parent item ID for this BOM. Added by the ingestion engine because SOS does not include it in the BOM payload.',
+				type: 'integer'
+			},
+			{
+				name: 'lineNumber',
+				description: 'The line number for this line on the BOM.',
+				type: 'integer'
+			},
+			{
+				name: 'componentItem',
+				description: 'A reference to the item for this line on the BOM.',
+				type: 'reference',
+				reference: { field: 'componentItemId', property: 'id', sourceTable: 'items', sourceField: 'id' }
+			},
+			{
+				name: 'description',
+				description: 'The item description.',
+				type: 'string'
+			},
+			{
+				name: 'quantity',
+				description: 'The quantity of this item on the BOM.',
+				type: 'integer'
+			},
+			{
+				name: 'cost',
+				description: 'The cost for this component item.',
+				type: 'decimal'
+			},
+			{
+				name: 'total',
+				description: 'The component item total.',
+				type: 'decimal'
+			},
+			{
+				name: 'typeOfItem',
+				description: 'The kind of item. Must be one of the following: "Inventory Item", "Non-inventory", "Category", "Expense", "Assembly", "Kit", "Service", "Labor", "Overhead", or "Other".',
+				type: 'string'
+			},
+			{
+				name: 'baseWeight',
+				description: 'The base weight for this item',
+				type: 'decimal',
+				readOnly: true
+			},
+			{
+				name: 'weight',
+				description: 'The weight of this item.',
+				type: 'decimal',
+				readOnly: true
+			},
+			{
+				name: 'weightunit',
+				description: 'The unit for the weight value.',
+				type: 'string',
+				readOnly: true
+			},
+			{
+				name: 'baseVolume',
+				description: 'The base volume for this item',
+				type: 'decimal',
+				readOnly: true
+			},
+			{
+				name: 'volume',
+				description: 'The volume of this item.',
+				type: 'decimal',
+				readOnly: true
+			},
+			{
+				name: 'volumeunit',
+				description: 'The unit for the volume value.',
+				type: 'string',
+				readOnly: true
+			},
+			{
+				name: 'notes',
+				description: 'The note for this line on the BOM.',
+				type: 'string'
 			}
 		],
 		primaryKey: ['id']
