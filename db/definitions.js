@@ -10964,7 +10964,7 @@ exports.tables = [
 		name: 'transfers',
 		sosObject: 'Transfer',
 		description: 'Transfer transactions record the movement of inventory from one location to another.',
-		primary: true,
+		primary: false,
 		api: {
 			query: {
 				endpoint: '/api/v2/transfer',
