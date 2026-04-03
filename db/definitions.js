@@ -330,7 +330,7 @@ exports.tables = [
 		name: 'adjustments',
 		sosObject: 'Adjustment',
 		description: 'Inventory adjustments allow you to modify the quantity and/or cost basis of inventory on hand. You should use inventory adjustments sparingly, as most often inventory will be added or removed through item receipts and shipments.',
-		primary: false,
+		primary: true,
 		api: {
 			query: {
 				endpoint: '/api/v2/adjustment',
@@ -756,7 +756,7 @@ exports.tables = [
 		name: 'builds',
 		sosObject: 'Build',
 		description: 'A build transaction uses raw materials to assemble a finished good. This transaction results in a decrease in the inventory of the raw materials and an increase in the inventory of the assembled item.',
-		primary: false,
+		primary: true,
 		api: {
 			query: {
 				endpoint: '/api/v2/build',
@@ -949,11 +949,11 @@ exports.tables = [
 							unique: true
 						},
 						{
-							name: 'linenumber',
+							name: 'lineNumber',
 							description: 'The line number for this line on the adjustment transaction.',
 							type: 'integer',
 							source: 'object',
-							property: 'linenumber'
+							property: 'lineNumber'
 						},
 						{
 							name: 'item',
@@ -1130,11 +1130,11 @@ exports.tables = [
 							unique: true
 						},
 						{
-							name: 'linenumber',
+							name: 'lineNumber',
 							description: 'The line number for this line on the adjustment transaction.',
 							type: 'integer',
 							source: 'object',
-							property: 'linenumber'
+							property: 'lineNumber'
 						},
 						{
 							name: 'item',
@@ -1488,7 +1488,7 @@ exports.tables = [
 		name: 'customers',
 		sosObject: 'Customer',
 		description: 'Represents a customer record used for sales, billing, shipping, pricing, tax configuration, and QuickBooks synchronization. Includes contact information, addresses, payment terms, pricing tier, tax settings, custom fields, and optional QuickBooks metadata such as sync status and stored payment token details.',
-		primary: false,
+		primary: true,
 		api: {
 			query: {
 				endpoint: '/api/v2/customer',
@@ -1988,7 +1988,7 @@ exports.tables = [
 		name: 'estimates',
 		sosObject: 'Estimate',
 		description: 'An estimate is a quotation to a customer, or an offer to provide products or services at a specified price. The terms of an estimate (binding, non-binding, etc.) are set by your company policies.',
-		primary: false,
+		primary: true,
 		api: {
 			query: {
 				endpoint: '/api/v2/estimate',
@@ -2304,11 +2304,11 @@ exports.tables = [
 							unique: true
 						},
 						{
-							name: 'linenumber',
+							name: 'lineNumber',
 							description: 'The line number for this line on the estimate transaction.',
 							type: 'integer',
 							source: 'object',
-							property: 'linenumber'
+							property: 'lineNumber'
 						},
 						{
 							name: 'item',
@@ -2478,7 +2478,7 @@ exports.tables = [
 		name: 'invoices',
 		sosObject: 'Invoice',
 		description: 'An invoice is a bill to a customer requesting that they pay you a certain amount of money by a certain date.',
-		primary: false,
+		primary: true,
 		api: {
 			query: {
 				endpoint: '/api/v2/invoice',
@@ -2814,7 +2814,7 @@ exports.tables = [
 			},
 			{
 				name: 'lines',
-				description: 'The lines for the invoice. See object structure below.',
+				description: 'The lines for the invoice.',
 				type: 'array',
 				sidecar: {
 					table: 'invoiceItems',
@@ -2829,11 +2829,11 @@ exports.tables = [
 							unique: true
 						},
 						{
-							name: 'linenumber',
+							name: 'lineNumber',
 							description: 'The line number for this line on the invoice transaction.',
 							type: 'integer',
 							source: 'object',
-							property: 'linenumber'
+							property: 'lineNumber'
 						},
 						{
 							name: 'item',
@@ -2995,7 +2995,7 @@ exports.tables = [
 		name: 'itemReceipts',
 		sosObject: 'Item Receipt',
 		description: 'Items are received into inventory by creating item receipts.',
-		primary: false,
+		primary: true,
 		api: {
 			query: {
 				endpoint: '/api/v2/itemreceipt',
@@ -3246,11 +3246,11 @@ exports.tables = [
 							unique: true
 						},
 						{
-							name: 'linenumber',
+							name: 'lineNumber',
 							description: 'The line number for this line on the invoice transaction.',
 							type: 'integer',
 							source: 'object',
-							property: 'linenumber'
+							property: 'lineNumber'
 						},
 						{
 							name: 'item',
@@ -3431,7 +3431,7 @@ exports.tables = [
 		name: 'items',
 		sosObject: 'Item',
 		description: 'Items are the most important pieces of data in SOS Inventory. They drive everything else in the system. Items can represent almost anything—they do not have to be things stored in inventory. An item is simply something you want to track in SOS Inventory. Examples include a product you sell, a service you provide, raw materials you use in manufacturing, and your overhead expenses.',
-		primary: false,
+		primary: true,
 		api: {
 			query: {
 				endpoint: '/api/v2/item',
@@ -4085,7 +4085,7 @@ exports.tables = [
 		name: 'jobs',
 		sosObject: 'Job',
 		description: 'Jobs, available on the Pro Plan of SOS Inventory, provide a convenient way to organize groups of transactions. Each job--and even each stage of a job--can have its own profit-and-loss statement, showing precisely how much money was made or lost on a given set',
-		primary: false,
+		primary: true,
 		api: {
 			query: {
 				endpoint: '/api/v2/job',
@@ -4388,7 +4388,7 @@ exports.tables = [
 		name: 'lots',
 		sosObject: 'Lot',
 		description: 'Lot tracking is used to track batches or groups of a specific item.',
-		primary: false,
+		primary: true,
 		api: {
 			query: {
 				endpoint: '/api/v2/lot',
@@ -4702,7 +4702,7 @@ exports.tables = [
 	{
 		name: 'pickTickets',
 		description: 'A pick ticket gives instructions to your warehouse to pull certain items, quantities, serial numbers, lot numbers, etc. Pick tickets do NOT remove items from inventory.',
-		primary: false,
+		primary: true,
 		api: {
 			query: {
 				endpoint: '/api/v2/pickticket',
@@ -4932,11 +4932,11 @@ exports.tables = [
 							unique: true
 						},
 						{
-							name: 'linenumber',
+							name: 'lineNumber',
 							description: 'The line number for this line on the pick ticket transaction.',
 							type: 'integer',
 							source: 'object',
-							property: 'linenumber'
+							property: 'lineNumber'
 						},
 						{
 							name: 'item',
@@ -5213,7 +5213,7 @@ exports.tables = [
 		name: 'processes',
 		sosObject: 'Process',
 		description: 'Processes in SOS Inventory can have an unlimited number of inputs and outputs. This gives you the flexibility to handle not only simple manufacturing (multiple inputs into one output) but also disassembly (where one input produces many outputs) and processes with by-products (multiple inputs into multiple outputs).',
-		primary: false,
+		primary: true,
 		api: {
 			query: {
 				endpoint: '/api/v2/process',
@@ -5426,11 +5426,11 @@ exports.tables = [
 							unique: true
 						},
 						{
-							name: 'linenumber',
+							name: 'lineNumber',
 							description: 'The line number for this line on the process transaction.',
 							type: 'integer',
 							source: 'object',
-							property: 'linenumber'
+							property: 'lineNumber'
 						},
 						{
 							name: 'item',
@@ -5601,11 +5601,11 @@ exports.tables = [
 							unique: true
 						},
 						{
-							name: 'linenumber',
+							name: 'lineNumber',
 							description: 'The line number for this line on the process transaction.',
 							type: 'integer',
 							source: 'object',
-							property: 'linenumber'
+							property: 'lineNumber'
 						},
 						{
 							name: 'item',
@@ -5766,7 +5766,7 @@ exports.tables = [
 		name: 'purchaseOrders',
 		sosObject: 'Purchase Order',
 		description: 'A purchase order is a document requesting that a vendor provide a good or service in exchange for payment.',
-		primary: false,
+		primary: true,
 		api: {
 			query: {
 				endpoint: '/api/v2/purchaseorder',
@@ -6067,11 +6067,11 @@ exports.tables = [
 							unique: true
 						},
 						{
-							name: 'linenumber',
+							name: 'lineNumber',
 							description: 'The line number for this line on the purchase order transaction.',
 							type: 'integer',
 							source: 'object',
-							property: 'linenumber'
+							property: 'lineNumber'
 						},
 						{
 							name: 'item',
@@ -6478,11 +6478,11 @@ exports.tables = [
 							unique: true
 						},
 						{
-							name: 'linenumber',
+							name: 'lineNumber',
 							description: 'The line number for this line on the transaction.',
 							type: 'integer',
 							source: 'object',
-							property: 'linenumber'
+							property: 'lineNumber'
 						},
 						{
 							name: 'item',
@@ -6719,7 +6719,7 @@ exports.tables = [
 		name: 'rentals',
 		sosObject: 'Rental',
 		description: 'Rental transactions record the renting of an inventory item by a customer.',
-		primary: false,
+		primary: true,
 		api: {
 			query: {
 				endpoint: '/api/v2/rental',
@@ -7060,11 +7060,11 @@ exports.tables = [
 							unique: true
 						},
 						{
-							name: 'linenumber',
+							name: 'lineNumber',
 							description: 'The line number for this line on the rental transaction.',
 							type: 'integer',
 							source: 'object',
-							property: 'linenumber'
+							property: 'lineNumber'
 						},
 						{
 							name: 'item',
@@ -7299,87 +7299,195 @@ exports.tables = [
 	},
 	{
 		name: 'returns',
+		sosObject: 'Return',
+		description: 'A return transaction is to an RMA what an item receipt is to a PO. It is a record that you actually received the goods from a customer.',
+		primary: true,
+		api: {
+			query: {
+				endpoint: '/api/v2/return',
+				description: 'Returns a list of return objects.',
+				method: 'GET',
+				results: [
+					{
+						name: 'count',
+						description: 'The number of results returned in this query.',
+						type: 'integer'
+					},
+					{
+						name: 'totalCount',
+						description: 'The total number of records that match the filters of this query.',
+						type: 'integer'
+					},
+					{
+						name: 'data',
+						description: 'An array of invoice objects.',
+						type: 'array'
+					},
+					{
+						name: 'status',
+						description: 'The status of the query. Will be “ok” if successful, otherwise this matches with the message field to indicate why the call failed.',
+						type: 'string'
+					},
+					{
+						name: 'message',
+						description: 'A descriptive message indicating why the query was unsuccessful.',
+						type: 'string'
+					}
+				],
+				arguments: [
+					{
+						name: 'start',
+						description: 'A cursor used in pagination. This is the row number of the full set of results. The API limits results to a max of 200 results per call. If you want to retrieve the next set of results you can use this parameter to retrive the next set of results. For example if you are retrieving 200 results at a time, you can set start=201 to retrieve the next page of results.',
+						type: 'integer'
+					},
+					{
+						name: 'maxresults',
+						description: 'The maximum number of results you want to return. The default is 200, the maximum value allowed.',
+						type: 'integer'
+					},
+					{
+						name: 'summary',
+						description: 'If this parameter is present (the value doesn\'t matter, and doesn\'t need to be specified), only the summary attributes of the estimate will be returned.',
+						type: 'string'
+					},
+					{
+						name: 'query',
+						description: 'This parameter will filter the results by matches of the string on the following fields: number, comment, or customer name.',
+						type: 'string'
+					},
+					{
+						name: 'archived',
+						description: 'A "yes" returns archived records only; a "no" returns only those that have not been archived.',
+						type: 'string'
+					},
+					{
+						name: 'from/to',
+						description: 'Returns records based on the beginning and ending transaction dates specified. Both parameters are optional. Using only one parameter allows filtering in one direction. Example: from=2019-09-01T00:00:00&to=2019-09-10T00:00:00',
+						type: 'timestamp'
+					},
+					{
+						name: 'createdsince/updatedsince',
+						description: 'Filters transactions created or updated since a specified date/time.',
+						type: 'timestamp'
+					},
+					{
+						name: 'location',
+						description: 'Filters transactions by location name.',
+						type: 'string'
+					}
+				]
+			}
+		},
+		sosApiUrl: 'https://developer.sosinventory.com/apidoc/Return',
+		sosHelpUrl: 'https://help.sosinventory.com/v8-returns-and-the-returns-list',
 		fields: [
 			{
 				name: 'populateFromObjectType',
+				description: '',
 				type: 'string'
 			},
 			{
 				name: 'populateFromId',
+				description: '',
 				type: 'integer'
 			},
 			{
 				name: 'id',
+				description: 'Unique identifier for this record. ID field is ignored on create requests.',
 				type: 'integer',
 				nulls: false,
 				unique: true
 			},
 			{
 				name: 'starred',
+				description: 'Indicates if this transaction has been starred. A value of 0 = no star; 1 or 1-3 = starred. Star colors depend on application configuration. This could be one color of star or three colors of stars. See Company Settings in the user guide for more details.',
 				type: 'integer'
 			},
 			{
 				name: 'syncToken',
+				description: 'Indicates the current version of this record. If you receive an error when updating a record, it is because your syncToken is for an older version of the record than that which is currently in the database. Please GET the latest version prior to updating.',
 				type: 'integer'
 			},
 			{
 				name: 'number',
+				description: 'The order number for this record. If you wish to use the automatic numbering capability on creation of a return, pass the string “auto”.',
 				type: 'string'
 			},
 			{
 				name: 'date',
-				type: 'string'
+				description: 'Transaction date.',
+				type: 'timestamp'
 			},
 			{
 				name: 'customer',
-				type: 'string'
+				description: 'Customer for this transaction.',
+				type: 'reference',
+				reference: { field: 'customerId', property: 'id', sourceTable: 'customers', sourceField: 'id' }
 			},
 			{
 				name: 'currency',
-				type: 'string'
+				description: 'Currency for this transaction.',
+				type: 'reference'
 			},
 			{
 				name: 'location',
-				type: 'string'
+				description: 'Location for this transaction.',
+				type: 'reference',
+				reference: { field: 'locationId', property: 'id', sourceTable: 'locations', sourceField: 'id' }
 			},
 			{
 				name: 'salesRep',
-				type: 'string'
+				description: 'Sales representative for this transaction.',
+				type: 'reference',
+				reference: { field: 'salesRepId', property: 'id', sourceTable: 'salesReps', sourceField: 'id' }
 			},
 			{
 				name: 'channel',
-				type: 'string'
+				description: 'Channel (e.g., Catalog, Retail Store) for this transaction.',
+				type: 'reference',
+				reference: { field: 'channelId', property: 'id', sourceTable: 'channels', sourceField: 'id' }
 			},
 			{
 				name: 'department',
-				type: 'string'
+				description: 'Department for this transaction.',
+				type: 'reference',
+				reference: { field: 'departmentId', property: 'id', sourceTable: 'departments', sourceField: 'id' }
 			},
 			{
 				name: 'shippingMethod',
-				type: 'string'
+				description: 'Shipping method for this return.',
+				type: 'reference',
+				reference: { field: 'shipMethodId', property: 'id', sourceTable: 'shipMethods', sourceField: 'id' }
 			},
 			{
 				name: 'trackingNumber',
+				description: 'The carrier\'s tracking number for this return.',
 				type: 'string'
 			},
 			{
 				name: 'linkedTransaction',
-				type: 'string'
+				description: 'The transaction linked to this line.',
+				type: 'object',
+				objectType: sosObjects.transaction
 			},
 			{
 				name: 'exchangeRate',
+				description: 'The exchange rate used for this transaction, if multicurrency is enabled.',
 				type: 'decimal'
 			},
 			{
 				name: 'customerMessage',
+				description: 'Customer message field.',
 				type: 'string'
 			},
 			{
 				name: 'comment',
+				description: 'The company’s internal comment about this transaction. This comment is not visible to the customer.',
 				type: 'string'
 			},
 			{
 				name: 'customerNotes',
+				description: 'Field for internal notes about customer.',
 				type: 'string'
 			},
 			{
@@ -7390,55 +7498,279 @@ exports.tables = [
 			},
 			{
 				name: 'shipBy',
-				type: 'string'
+				description: 'Date by which this order should be shipped.',
+				type: 'timestamp'
 			},
 			{
 				name: 'shippingAmount',
+				description: 'Shipping amount for this transaction.',
 				type: 'decimal'
 			},
 			{
 				name: 'total',
-				type: 'decimal'
+				description: 'Transaction total.',
+				type: 'decimal',
+				readOnly: true
 			},
 			{
 				name: 'archived',
-				type: 'integer'
+				description: 'True if item is archived, false if not.',
+				type: 'boolean',
+				readOnly: true
 			},
 			{
 				name: 'summaryOnly',
-				type: 'integer'
+				description: 'Indicates if the summary parameter was set when retrieving back this record.',
+				type: 'boolean',
+				readOnly: true
 			},
 			{
 				name: 'hasSignature',
-				type: 'integer'
+				description: 'Reserved for future use.',
+				type: 'boolean'
 			},
 			{
 				name: 'lines',
-				type: 'string'
-			},
-			{
-				name: 'customerId',
-				type: 'integer'
-			},
-			{
-				name: 'locationId',
-				type: 'integer'
-			},
-			{
-				name: 'salesRepId',
-				type: 'integer'
-			},
-			{
-				name: 'channelId',
-				type: 'integer'
-			},
-			{
-				name: 'departmentId',
-				type: 'integer'
-			},
-			{
-				name: 'shippingMethodId',
-				type: 'integer'
+				description: 'The lines for this return.',
+				type: 'array',
+				sidecar: {
+					table: 'returnItems',
+					fields: [
+						{
+							name: 'id',
+							description: 'The unique identifier for this return line item. ID field is ignored on create requests.',
+							type: 'integer',
+							source: 'object',
+							property: 'id',
+							nulls: false,
+							unique: true
+						},
+						{
+							name: 'lineNumber',
+							description: 'The line number for this line on this return transaction.',
+							type: 'integer',
+							source: 'object',
+							property: 'lineNumber'
+						},
+						{
+							name: 'item',
+							description: 'The item this line represents.',
+							type: 'reference',
+							reference: { field: 'itemId', property: 'id', sourceTable: 'items', sourceField: 'id' },
+							source: 'object',
+							property: 'item'
+						},
+						{
+							name: 'class',
+							description: 'The class for this line.',
+							type: 'reference',
+							reference: { field: 'classId', property: 'id', sourceTable: 'classes', sourceField: 'id' },
+							source: 'object',
+							property: 'class'
+						},
+						{
+							name: 'job',
+							description: 'The job for this line, if enabled.',
+							type: 'reference',
+							reference: { field: 'jobId', property: 'id', sourceTable: 'jobs', sourceField: 'id' },
+							source: 'object',
+							property: 'job'
+						},
+						{
+							name: 'workcenter',
+							description: 'The related work center for the job.',
+							type: 'reference',
+							reference: { field: 'workCenterId', property: 'id', sourceTable: 'workCenters', sourceField: 'id' },
+							source: 'object',
+							property: 'workcenter'
+						},
+						{
+							name: 'tax',
+							description: 'The tax information for this line, if enabled.',
+							type: 'object',
+							objectTypes: sosObjects.taxInformation,
+							source: 'object',
+							property: 'tax'
+						},
+						{
+							name: 'linkedTransaction',
+							description: 'The transaction linked to this line.',
+							type: 'object',
+							objectTypes: sosObjects.transaction,
+							source: 'object',
+							property: 'linkedTransaction'
+						},
+						{
+							name: 'description',
+							description: 'The item description.',
+							type: 'string',
+							source: 'object',
+							property: 'description'
+						},
+						{
+							name: 'quantity',
+							description: 'The quantity for this line.',
+							type: 'decimal',
+							source: 'object',
+							property: 'quantity'
+						},
+						{
+							name: 'weight',
+							description: 'The weight of this line.',
+							type: 'decimal',
+							source: 'object',
+							property: 'weight',
+							readOnly: true
+						},
+						{
+							name: 'volume',
+							description: 'The volume of this line.',
+							type: 'decimal',
+							source: 'object',
+							property: 'volume',
+							readOnly: true
+						},
+						{
+							name: 'weightunit',
+							description: 'The unit for the item\'s weight value.',
+							type: 'string',
+							source: 'object',
+							property: 'weightunit',
+							readOnly: true
+						},
+						{
+							name: 'volumeunit',
+							description: 'The unit for the volume value.',
+							type: 'string',
+							source: 'object',
+							property: 'volumeunit',
+							readOnly: true
+						},
+						{
+							name: 'unitPrice',
+							description: 'The per-unit purchase cost for the item.',
+							type: 'decimal',
+							source: 'object',
+							property: 'unitPrice'
+						},
+						{
+							name: 'amount',
+							description: 'The rental amount for this line. The amount must equal the quantity multiplied by the unit price.',
+							type: 'decimal',
+							source: 'object',
+							property: 'amount'
+						},
+						{
+							name: 'altAmount',
+							description: 'Unused.',
+							type: 'decimal',
+							source: 'object',
+							property: 'altAmount'
+						},
+						{
+							name: 'picked',
+							description: 'The number of items picked on this line.',
+							type: 'decimal',
+							source: 'object',
+							property: 'picked'
+						},
+						{
+							name: 'shipped',
+							description: 'The number of items shipped on this line.',
+							type: 'decimal',
+							source: 'object',
+							property: 'shipped'
+						},
+						{
+							name: 'invoiced',
+							description: 'the number of items invoiced on this line',
+							type: 'decimal',
+							source: 'object',
+							property: 'invoiced'
+						},
+						{
+							name: 'produced',
+							description: 'Unused.',
+							type: 'decimal',
+							source: 'object',
+							property: 'produced'
+						},
+						{
+							name: 'returned',
+							description: 'The number of items picked on this line.',
+							type: 'decimal',
+							source: 'object',
+							property: 'returned'
+						},
+						{
+							name: 'cost',
+							description: 'The cost for this line.',
+							type: 'decimal',
+							source: 'object',
+							property: 'cost'
+						},
+						{
+							name: 'margin',
+							description: 'The margin for this line.',
+							type: 'decimal',
+							source: 'object',
+							property: 'margin'
+						},
+						{
+							name: 'listPrice',
+							description: 'The list price for this item.',
+							type: 'decimal',
+							source: 'object',
+							property: 'listPrice'
+						},
+						{
+							name: 'percentDiscount',
+							description: 'The discount percentage applied to this line.',
+							type: 'decimal',
+							source: 'object',
+							property: 'percentDiscount'
+						},
+						{
+							name: 'dueDate',
+							description: 'The due date for this line.',
+							type: 'timestamp',
+							source: 'object',
+							property: 'dueDate'
+						},
+						{
+							name: 'uom',
+							description: 'The unit of measure for this line.',
+							type: 'reference',
+							reference: { field: 'unitsOfMeasureId', property: 'id', sourceTable: 'unitsOfMeasure', sourceField: 'id' },
+							source: 'object',
+							property: 'uom'
+						},
+						{
+							name: 'bin',
+							description: 'Bin from which this item was shipped.',
+							type: 'reference',
+							reference: { field: 'binId', property: 'id', sourceTable: 'bins', sourceField: 'id' },
+							source: 'object',
+							property: 'bin'
+						},
+						{
+							name: 'lot',
+							description: 'The lot used for this item process.',
+							type: 'reference',
+							reference: { field: 'lotId', property: 'id', sourceTable: 'lots', sourceField: 'id' },
+							source: 'object',
+							property: 'lot'
+						},
+						{
+							name: 'serials',
+							description: 'The serial numbers used for this item process.',
+							type: 'array',
+							source: 'object',
+							property: 'serials'
+						}
+					],
+					primaryKey: ['id']
+				}
 			}
 		],
 		primaryKey: ['id']
