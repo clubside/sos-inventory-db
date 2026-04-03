@@ -178,7 +178,7 @@ async function handleSupportTable(engine, table) {
 
 	return { ok: true }
 }
-/*
+
 async function handleItemBoms(params, engine, table) {
 	await createTable(engine, table)
 
@@ -211,7 +211,7 @@ async function handleItemBoms(params, engine, table) {
 
 	return { ok: true }
 }
-*/
+
 async function downloadSOS(params) {
 	if (!params.database.engine) {
 		return {
@@ -234,7 +234,7 @@ async function downloadSOS(params) {
 	const start = Date.now()
 
 	const engine = await openDb(params.database)
-	/*
+
 	// PASS 1 — reference tables
 	const referenceTables = tables.filter(table => table.reference === true)
 	for (const table of referenceTables) {
@@ -249,7 +249,7 @@ async function downloadSOS(params) {
 			}
 		}
 	}
-	*/
+
 	// PASS 2 - primary tables
 	const primaryTables = tables.filter(table => table.primary === true)
 	for (const table of primaryTables) {
@@ -268,7 +268,7 @@ async function downloadSOS(params) {
 	// PASS 3 — support tables
 	for (const table of supportTables) {
 		if (table.name === 'itemBoms') {
-			/* const bomResult = await handleItemBoms(params, engine, table)
+			const bomResult = await handleItemBoms(params, engine, table)
 			if (!bomResult.ok) {
 				if (engine.close) await engine.close()
 				return {
@@ -277,7 +277,7 @@ async function downloadSOS(params) {
 					error: bomResult.error || new Error('Unknown item BOM handler error'),
 					extra: { table: table.name, result: bomResult }
 				}
-			} */
+			}
 		} else {
 			const refResult = await handleSupportTable(engine, table)
 			if (!refResult.ok) {
