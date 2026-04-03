@@ -10147,7 +10147,7 @@ exports.tables = [
 		name: 'shipments',
 		sosObject: 'Shipment',
 		description: 'In SOS Inventory, a shipment moves inventory from your company to the customer. The process does not necessarily mean that you actually shipped it. If, for example, a customer picks up the items from your location, a shipment transaction is still needed to indicate the items were removed from inventory.',
-		primary: true,
+		primary: false,
 		api: {
 			query: {
 				endpoint: '/api/v2/shipment',
