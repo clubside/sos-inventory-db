@@ -9971,7 +9971,7 @@ exports.tables = [
 		name: 'serialNumbers',
 		sosObject: 'Serial Number',
 		description: 'Serialized inventory allows you to track individual units of an item, rather than quantities only. A serial number is assigned to each unit, and the number stays with the unit as it goes through the system.',
-		primary: true,
+		primary: false,
 		api: {
 			query: {
 				endpoint: '/api/v2/serial',
