@@ -1696,7 +1696,8 @@ exports.tables = [
 			{
 				name: 'currency',
 				description: 'Currency used for transactions with this customer when multicurrency is enabled.',
-				type: 'reference'
+				type: 'reference',
+				reference: { field: 'currencyId', property: 'id', sourceTable: 'currencies', sourceField: 'id' }
 			},
 			{
 				name: 'tax',
@@ -2122,7 +2123,8 @@ exports.tables = [
 			{
 				name: 'currency',
 				description: 'Currency used for transaction, if multicurrency is enabled.',
-				type: 'reference'
+				type: 'reference',
+				reference: { field: 'currencyId', property: 'id', sourceTable: 'currencies', sourceField: 'id' }
 			},
 			{
 				name: 'transactionLocationQuickBooks',
@@ -2618,7 +2620,8 @@ exports.tables = [
 			{
 				name: 'currency',
 				description: 'Currency used for transaction, if multicurrency is enabled.',
-				type: 'reference'
+				type: 'reference',
+				reference: { field: 'currencyId', property: 'id', sourceTable: 'currencies', sourceField: 'id' }
 			},
 			{
 				name: 'linkedTransaction',
@@ -3097,7 +3100,8 @@ exports.tables = [
 			{
 				name: 'currency',
 				description: 'Currency used for transaction if multicurrency is enabled.',
-				type: 'reference'
+				type: 'reference',
+				reference: { field: 'currencyId', property: 'id', sourceTable: 'currencies', sourceField: 'id' }
 			},
 			{
 				name: 'taxCode',
@@ -5765,7 +5769,8 @@ exports.tables = [
 			{
 				name: 'currency',
 				description: 'Currency used for transaction, if multicurrency is enabled.',
-				type: 'reference'
+				type: 'reference',
+				reference: { field: 'currencyId', property: 'id', sourceTable: 'currencies', sourceField: 'id' }
 			},
 			{
 				name: 'taxCode',
@@ -6769,7 +6774,8 @@ exports.tables = [
 			{
 				name: 'currency',
 				description: 'Currency used for transaction if multicurrency is enabled',
-				type: 'reference'
+				type: 'reference',
+				reference: { field: 'currencyId', property: 'id', sourceTable: 'currencies', sourceField: 'id' }
 			},
 			{
 				name: 'linkedTransaction',
@@ -7279,7 +7285,8 @@ exports.tables = [
 			{
 				name: 'currency',
 				description: 'Currency for this transaction.',
-				type: 'reference'
+				type: 'reference',
+				reference: { field: 'currencyId', property: 'id', sourceTable: 'currencies', sourceField: 'id' }
 			},
 			{
 				name: 'location',
@@ -8700,7 +8707,8 @@ exports.tables = [
 			{
 				name: 'currency',
 				description: 'Currency used for transaction, if multicurrency is enabled.',
-				type: 'reference'
+				type: 'reference',
+				reference: { field: 'currencyId', property: 'id', sourceTable: 'currencies', sourceField: 'id' }
 			},
 			{
 				name: 'linkedTransaction',
@@ -9330,7 +9338,8 @@ exports.tables = [
 			{
 				name: 'currency',
 				description: 'Currency used for transaction, if multicurrency is enabled.',
-				type: 'string'
+				type: 'reference',
+				reference: { field: 'currencyId', property: 'id', sourceTable: 'currencies', sourceField: 'id' }
 			},
 			{
 				name: 'linkedTransaction',
@@ -11483,7 +11492,8 @@ exports.tables = [
 			{
 				name: 'currency',
 				description: 'Currency used for vendor, if multicurrency is enabled.',
-				type: 'reference'
+				type: 'reference',
+				reference: { field: 'currencyId', property: 'id', sourceTable: 'currencies', sourceField: 'id' }
 			},
 			{
 				name: 'taxCode',
