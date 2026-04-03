@@ -11478,7 +11478,7 @@ exports.tables = [
 		name: 'vendors',
 		sosObject: 'Vendor',
 		description: '',
-		primary: true,
+		primary: false,
 		api: {
 			query: {
 				endpoint: '/api/v2/vendor',
