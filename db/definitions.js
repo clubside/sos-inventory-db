@@ -9275,7 +9275,7 @@ exports.tables = [
 		name: 'salesReceipts',
 		sosObject: 'Sales Receipt',
 		description: 'A sales receipt is a record of a completed sales transaction.',
-		primary: true,
+		primary: false,
 		api: {
 			query: {
 				endpoint: '/api/v2/salesreceipt',
