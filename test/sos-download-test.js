@@ -29,7 +29,7 @@ const testDatabases = {
 	mssql: {
 		engine: 'mssql',
 		server: process.env.MSSQL_SERVER,
-		port: process.env.MSSQL_PORT,
+		port: Number(process.env.MSSQL_PORT),
 		authentication: {
 			type: 'default',
 			options: {
@@ -48,7 +48,7 @@ const testDatabases = {
 
 async function run() {
 	const result = await downloadSOS({
-		database: testDatabases.postgres,
+		database: testDatabases.mssql,
 		sosAuthorization: process.env.SOS_AUTH,
 		retries: 5
 	})
