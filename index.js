@@ -41,6 +41,7 @@ async function sosApi(url, method, authorization, retries = 5) {
 
 			const delay = 250 * attempt
 			console.log(`Retry ${attempt}/${retries} after error: ${err.message}`)
+			console.log(url)
 			await new Promise(resolve => setTimeout(resolve, delay))
 		}
 	}
