@@ -159,7 +159,8 @@ async function handleSupportTable(engine, table) {
 		for (const row of rows) {
 			let obj
 			try {
-				obj = JSON.parse(row[table.sourceField])
+				obj = row[table.sourceField]
+				if (typeof obj !== 'object') obj = JSON.parse(obj)
 			} catch {
 				continue
 			}
@@ -171,7 +172,7 @@ async function handleSupportTable(engine, table) {
 			values[table.destinationField] = refId
 
 			await engine.update(
-				sourceTable.name,
+				sourceTable,
 				values,
 				{ id: row.id }
 			)
