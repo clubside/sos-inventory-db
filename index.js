@@ -148,37 +148,6 @@ async function handleSupportTable(engine, table) {
 		await insertRow(engine, table, value)
 	}
 
-	// 3. Update source tables with reference ID
-	for (const sourceTable of table.sourceTables) {
-		const rows = await engine.query(
-            `SELECT ${engine.q('id')}, ${engine.q(table.sourceField)} FROM ${engine.q(sourceTable)} WHERE ${engine.q(table.sourceField)} IS NOT NULL`,
-            [],
-            true
-		)
-
-		for (const row of rows) {
-			let obj
-			try {
-				obj = row[table.sourceField]
-				if (typeof obj !== 'object') obj = JSON.parse(obj)
-			} catch {
-				continue
-			}
-
-			const refId = obj.id ?? obj.value ?? obj.code
-			if (!refId) continue
-
-			const values = {}
-			values[table.destinationField] = refId
-
-			await engine.update(
-				sourceTable,
-				values,
-				{ id: row.id }
-			)
-		}
-	}
-
 	return { ok: true }
 }
 
