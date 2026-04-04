@@ -190,7 +190,6 @@ async function handleItemBoms(params, engine, table) {
 
 	for (const item of items) {
 		const result = await sosApi(`https://api.sosinventory.com/api/v2/item/${item.id}/bom`, 'GET', params.sosAuthorization, retries)
-		// console.log(result)
 
 		if (!result.data) continue
 
@@ -237,7 +236,6 @@ async function downloadSOS(params) {
 
 	const engine = await openDb(params.database)
 
-	// PASS 1 — reference tables
 	const referenceTables = tables.filter(table => table.reference === true)
 	for (const table of referenceTables) {
 		const result = await downloadTable(params, engine, table)
