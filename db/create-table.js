@@ -2,6 +2,7 @@
 
 const sqliteTypes = {
 	string: 'TEXT',
+	longstring: 'TEXT',
 	integer: 'INTEGER',
 	boolean: 'INTEGER',
 	decimal: 'NUMERIC',
@@ -13,6 +14,7 @@ const sqliteTypes = {
 
 const postgresTypes = {
 	string: 'TEXT',
+	longstring: 'TEXT',
 	integer: 'INTEGER',
 	boolean: 'BOOLEAN',
 	decimal: 'NUMERIC',
@@ -24,6 +26,7 @@ const postgresTypes = {
 
 const mysqlTypes = {
 	string: 'TEXT',
+	longstring: 'LONGTEXT',
 	integer: 'INT',
 	boolean: 'TINYINT(1)',
 	decimal: 'DECIMAL(38,10)',
@@ -37,6 +40,7 @@ const mariadbTypes = mysqlTypes
 
 const mssqlTypes = {
 	string: 'NVARCHAR(MAX)',
+	longstring: 'NVARCHAR(MAX)',
 	integer: 'INT',
 	boolean: 'BIT',
 	decimal: 'DECIMAL(38,10)',

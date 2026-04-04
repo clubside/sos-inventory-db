@@ -160,7 +160,7 @@ const sosObjects = {
  * @typedef {Object} SOSField
  * @property {String} name - name of the field
  * @property {String} description - description of the field
- * @property {("string"|"integer"|"boolean"|"decimal"|"object"|"array"|"reference"|"timestamp")} type - database-agnostic datatype
+ * @property {("string"|"logstring"|"integer"|"boolean"|"decimal"|"object"|"array"|"reference"|"timestamp")} type - database-agnostic datatype
  * @property {Boolean} [readOnly] - whether the field is read only
  * @property {Object} [objectType] - definition object for nested SOS object types
  * @property {Boolean} [nulls] - whether the field allows nulls
