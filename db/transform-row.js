@@ -60,7 +60,6 @@ module.exports = function transformRow(engine, tableDef, sosObject) {
 	}
 
 	// PASS 2 — synthetic FK fields appended at the end
-	// PASS 2 — synthetic FK fields appended at the end
 	for (const field of tableDef.fields) {
 		if (field.type !== 'reference') continue
 
