@@ -38,7 +38,8 @@ module.exports = function transformRow(engine, tableDef, sosObject) {
 
 	// PASS 1 — main fields in schema order
 	for (const field of tableDef.fields) {
-		const value = sosObject[field.name]
+		let value = sosObject[field.name]
+		if (value === undefined || value === '') value = null
 
 		if (field.type === 'reference' && field.reference) {
 			row[field.name] = transformJson(engine, value)
