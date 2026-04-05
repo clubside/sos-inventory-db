@@ -48,7 +48,7 @@ const testDatabases = {
 
 async function run() {
 	const result = await downloadSOS({
-		database: testDatabases.postgres,
+		database: testDatabases.sqlite,
 		sosAuthorization: process.env.SOS_AUTH,
 		retries: 5
 	})
