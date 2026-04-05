@@ -16,6 +16,15 @@
     "LICENSE"
   ],
 
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/clubside/sos-inventory-db.git"
+  },
+  "bugs": {
+    "url": "https://github.com/clubside/sos-inventory-db/issues"
+  },
+  "homepage": "https://github.com/clubside/sos-inventory-db#readme",
+
   "scripts": {
     "build": "node build.js",
     "test": "node test/sos-download-test.js"
