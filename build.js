@@ -16,7 +16,8 @@ async function build() {
 		outfile: 'dist/index.cjs',
 		format: 'cjs',
 		bundle: true,
-		platform: 'node'
+		platform: 'node',
+		external: ['better-sqlite3', 'mariadb', 'mysql2', 'pg', 'mssql']
 	})
 
 	// Build ESM
@@ -25,7 +26,8 @@ async function build() {
 		outfile: 'dist/index.mjs',
 		format: 'esm',
 		bundle: true,
-		platform: 'node'
+		platform: 'node',
+		external: ['better-sqlite3', 'mariadb', 'mysql2', 'pg', 'mssql']
 	})
 }
 
