@@ -183,6 +183,92 @@ async function handleItemBoms(params, engine, table) {
 	return { ok: true }
 }
 
+/**
+ * SQLite database configuration.
+ * @typedef {object} SQLiteConfig
+ * @property {'sqlite'} engine
+ * @property {string} filename - Path to the SQLite database file.
+ */
+
+/**
+  * MariaDB database configuration.
+  * @typedef {object} MariaDBConfig
+  * @property {'mariadb'} engine
+  * @property {string} host
+  * @property {number|string} port
+  * @property {string} user
+  * @property {string} password
+  * @property {string} database
+  */
+
+/**
+  * PostgreSQL database configuration.
+  * @typedef {object} PostgresConfig
+  * @property {'postgres'} engine
+  * @property {string} host
+  * @property {number|string} port
+  * @property {string} user
+  * @property {string} password
+  * @property {string} database
+  */
+
+/**
+  * SQL Server (MSSQL) authentication options.
+  * @typedef {object} MSSQLAuthOptions
+  * @property {string} userName
+  * @property {string} password
+  */
+
+/**
+  * SQL Server (MSSQL) authentication wrapper.
+  * @typedef {object} MSSQLAuthentication
+  * @property {'default'} type
+  * @property {MSSQLAuthOptions} options
+  */
+
+/**
+  * SQL Server (MSSQL) database configuration.
+  * @typedef {object} MSSQLConfig
+  * @property {'mssql'} engine
+  * @property {string} server
+  * @property {number} port
+  * @property {MSSQLAuthentication} authentication
+  * @property {object} options
+  * @property {string} options.database
+  * @property {boolean} options.encrypt
+  * @property {boolean} options.trustServerCertificate
+  * @property {boolean} options.enableArithAbort
+  */
+
+/**
+  * Union of all supported database configurations.
+  * @typedef {SQLiteConfig | MariaDBConfig | PostgresConfig | MSSQLConfig} DatabaseConfig
+  */
+
+/**
+  * Parameters for the downloadSOS function.
+  * @typedef {object} DownloadSOSParams
+  * @property {DatabaseConfig} database - Database engine configuration.
+  * @property {string} sosAuthorization - Full SOS Inventory Authorization header value (e.g. "Bearer <token>").
+  * @property {number} [retries=5] - Optional retry count for failed SOS API requests.
+  */
+
+/**
+  * Downloads all SOS Inventory objects and inserts them into the configured database.
+  *
+  * This function:
+  * - Validates the database configuration
+  * - Opens a connection to the target engine
+  * - Creates all reference and support tables
+  * - Fetches all SOS Inventory objects using the v2 API
+  * - Normalizes and inserts records into relational tables
+  * - Closes the database connection when complete
+  *
+  * @async
+  * @function downloadSOS
+  * @param {DownloadSOSParams} params - Configuration for ingestion.
+  * @returns {Promise<void>} Resolves when ingestion completes.
+  */
 async function downloadSOS(params) {
 	if (!params.database.engine) {
 		return {
